@@ -32,6 +32,31 @@ Decide the allowlist from the deployment, not the code: which `Host` does the pr
 and which origins does a browser-based client present? Pass it explicitly. Re-check the file
 in your installed version before trusting any line above.
 
+### "The public name is in allowed_hosts and it still 421s"
+
+Then the server is not receiving the public name. Proxies differ in what `Host` they send
+upstream:
+
+- **nginx** with `proxy_pass http://mcp:8000;` and no `proxy_set_header Host` sends the
+  upstream's name (`mcp:8000`, nginx's `$proxy_host`), not the name the client used. Add
+  `proxy_set_header Host $host;` and keep the allowlist on the public name. Checked against
+  the nginx `proxy_set_header` documentation, 16/10/2026.
+- Other proxies and platform load balancers may pass the original `Host`, add a port, or
+  rewrite it. Do not assume; observe.
+
+Confirm before changing anything: log the `Host` header the application receives (one
+line of middleware, or the SDK's warning log, which prints the rejected value), or send a
+request straight to the container with an explicit `-H 'Host: mcp.example.com'`. Then
+allowlist exactly that, or fix the proxy so it sends the public name. Leave protection on.
+
+### Two errors, two checks
+
+When debugging with `curl`, `-d` without a header sends
+`Content-Type: application/x-www-form-urlencoded`, which the SDK answers with `400 Invalid
+Content-Type header` regardless of the Host check (fact 6 above). A `400` after turning
+protection off is that check, not the Host problem surviving. Always send
+`-H 'Content-Type: application/json' -H 'Accept: application/json, text/event-stream'`.
+
 ## Health, readiness and the deploy gate
 
 An authenticated MCP endpoint answers `401` to an anonymous caller, which makes it a poor

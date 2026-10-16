@@ -36,12 +36,26 @@ Example:
   same date, so for skills that will be uploaded there, make the first 200 characters carry
   the what and the main trigger.
 
+## Write in the user's words, not the author's
+
+The author knows the process by its internal names: a codename ("QBR-v3"), a vendor
+("Halcyon export"), a script, a pipeline. The person asking knows it by its outcome
+("prep the quarterly business review for Acme"). A description written in the first
+vocabulary matches nobody but the author. Keep internal names in the body, where they help
+once the skill has loaded, and put the user's words in the description.
+
 ## Diagnosing a skill that does not trigger
 
 1. Ask Claude, in a fresh session, the exact phrase the person used. Does the description
    contain any of its words or its intent?
-2. Add the missing phrasing to the "Use when" clause. Prefer real phrasings over synonyms.
-3. If two skills compete, sharpen both with a "not for" clause.
-4. If it triggers too often, the description is too broad: name the specific inputs it needs.
+2. Read every other installed skill's description. A broader sibling that lists the phrase
+   ("quarterly review deck", "client presentation") will win against a narrower skill that
+   does not, however much better the narrower one is at the job.
+3. Add the missing phrasing to the "Use when" clause. Prefer real phrasings over synonyms.
+4. If two skills compete, sharpen both: the phrasing goes into the one that should win, and
+   the other gets "Not for <that job>; use <skill>".
+5. Re-test with the failing phrase and with a prompt that must still reach the sibling.
+6. If it triggers too often, the description is too broad: name the specific inputs it
+   needs. If it is broad because the skill does several jobs, split it.
 
 Change one thing at a time and re-test with the three prompts in `evals.md`.

@@ -16,7 +16,10 @@ Checks, each reported as ok / FAIL / warn:
   - reference files over 100 lines start with a table of contents (warn)
   - no leftover template placeholders such as {{NAME}} or TODO markers (files under a
     templates/ folder are exempt, since holding placeholders is their job)
-  - no obvious secrets (private key headers, common API key prefixes)
+  - no obvious secrets (private key headers, common API key prefixes such as sk-, sk_live_,
+    rk_live_, AKIA, ghp_, xox and AIza), in every text file including references/
+  - warns on a credential-looking assignment (api_key = "...") and on email addresses that
+    are not on a reserved example domain, since both usually mean real data leaked in
   - any extra --check-text patterns (for example a company name) do not appear
 
 Exit code: 0 when nothing failed, 1 when anything failed. Warnings never fail the run.
@@ -44,7 +47,16 @@ SECRET_PATTERNS = [
     re.compile(r"\bAKIA[0-9A-Z]{16}\b"),              # AWS access key id
     re.compile(r"\bgh[pousr]_[A-Za-z0-9]{30,}\b"),    # GitHub tokens
     re.compile(r"\bxox[abprs]-[A-Za-z0-9-]{10,}"),    # Slack tokens
+    re.compile(r"\b[sr]k_(?:live|test)_[A-Za-z0-9]{16,}"),  # Stripe secret and restricted keys
+    re.compile(r"\bAIza[0-9A-Za-z_-]{35}\b"),         # Google API keys
 ]
+# Softer signals: reported as warnings because placeholders can look like this too.
+CREDENTIAL_ASSIGNMENT = re.compile(
+    r"(?i)\b(api[_-]?key|secret|token|password|passwd)\b\s*[:=]\s*['\"]?(?=[A-Za-z0-9_\-]*\d)[A-Za-z0-9_\-]{20,}"
+)
+EMAIL = re.compile(r"\b[A-Za-z0-9._%+-]+@([A-Za-z0-9-]+\.)+[A-Za-z]{2,}\b")
+# RFC 2606 reserved names, safe to use in examples.
+EXAMPLE_EMAIL_DOMAIN = re.compile(r"@(?:[A-Za-z0-9-]+\.)*(?:example\.(?:com|org|net)|[A-Za-z0-9-]+\.(?:example|test|invalid|localhost))$", re.I)
 # An XML-like tag: '<' immediately followed by a tag name (optionally '/'), optional
 # attributes, then '>'. Matches <example>, </b>, <br/> and <tag attr="x">, but not a lone
 # '<' or '>' in prose such as "under 5 MB (< 5)", "3 > 2" or an arrow "->".
@@ -147,7 +159,7 @@ def check(folder: Path, extra_patterns: list[str]) -> int:
         tags = XML_TAG.findall(desc)
         if tags:
             r.fail(f"description contains XML tags ({', '.join(sorted(set(tags))[:3])}); remove them")
-        if not re.search(r"\b(use|used) (it |this )?(when|for|to|before|after)\b", desc, re.I):
+        if not re.search(r"\b(use|used) (it |this )?(when|whenever|for|to|before|after|if)\b", desc, re.I):
             r.warn("description does not seem to say when to use the skill ('Use when ...')")
         if re.match(r"\s*(I |I'm |you can |this skill lets you)", desc, re.I):
             r.warn("description should be in the third person ('Builds ...', not 'I can ...')")
@@ -199,9 +211,20 @@ def check(folder: Path, extra_patterns: list[str]) -> int:
         if "templates" not in rel.parts:
             for m in PLACEHOLDER.finditer(content):
                 r.fail(f"{rel}: leftover placeholder '{m.group(0)}'")
+        secret_found = False
         for pat in SECRET_PATTERNS:
             if pat.search(content):
-                r.fail(f"{rel}: looks like it contains a secret ({pat.pattern[:30]}...)")
+                secret_found = True
+                r.fail(f"{rel}: looks like it contains a secret ({pat.pattern[:30]}...); "
+                       "remove it, revoke or roll it at the provider, and name it by reference "
+                       "(an environment variable or connector) under Configuration")
+        if not secret_found and CREDENTIAL_ASSIGNMENT.search(content):
+            r.warn(f"{rel}: has a credential-looking assignment; check it is a placeholder")
+        emails = sorted({m.group(0) for m in EMAIL.finditer(content)
+                         if not EXAMPLE_EMAIL_DOMAIN.search(m.group(0))})
+        if emails:
+            r.warn(f"{rel}: contains email address(es) {', '.join(emails[:3])}; "
+                   "use a placeholder on example.com unless the address is meant to be public")
         for text, pat in extra:
             if pat.search(content):
                 r.fail(f"{rel}: contains '{text}'")

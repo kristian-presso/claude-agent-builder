@@ -1,0 +1,46 @@
+schema_version: '1.0'
+name: 08-421-nginx-host
+description: 'Fixture: Host allowlist already contains the public name, but nginx forwards the upstream Host; a second test hits the Content-Type check.'
+tags:
+- mcp-server-builder
+- fire
+- debug
+- hard
+runs: 3
+context:
+  scaffold_script: setup.sh
+execution:
+  prompt: |
+    Still getting 421 behind nginx even though mcp.example.com is in allowed_hosts. server.py, nginx.conf and my curl attempts in debug-log.txt. Even turning the protection off didn't help. What's wrong?
+  max_turns: 8
+  timeout_seconds: 240
+  allowed_tools:
+  - Read
+  - Glob
+  - Grep
+  - Skill
+graders:
+- type: tool_used
+  name: trigger-fired
+  tool: Skill
+  input_match: mcp-server-builder
+- type: llm
+  name: nginx-forwards-upstream-host
+  criteria: |
+    Pass if the reply identifies that nginx, with proxy_pass and no `proxy_set_header Host`, sends the upstream's host (mcp:8000) as the Host header, so the server never sees mcp.example.com and the allowlist does not match.
+  weight: 1
+- type: llm
+  name: fix-forward-host
+  criteria: |
+    Pass if the recommended fix is to add `proxy_set_header Host $host;` in nginx (or to list exactly the Host value the server actually receives), keeping DNS rebinding protection enabled.
+  weight: 1
+- type: llm
+  name: second-error-is-content-type
+  criteria: |
+    Pass if the reply explains the 400 in the second attempt is a separate, unrelated check: that curl used -d without a Content-Type header (so it sent application/x-www-form-urlencoded) and the SDK rejects any POST whose Content-Type is not application/json even with protection off; it was not evidence that the Host check was still failing.
+  weight: 1
+- type: llm
+  name: verify-what-server-sees
+  criteria: |
+    Pass if the reply suggests confirming the diagnosis by observing the Host header the server actually receives (for example logging it, or a request straight to the container with an explicit Host header) rather than only guessing.
+  weight: 1

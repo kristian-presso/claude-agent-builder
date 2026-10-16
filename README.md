@@ -23,17 +23,17 @@ Five skills for people building things with Claude: MCP servers and the apps tha
 
 ## Tested, not just written
 
-Every skill is evaluated with Claude Code's built-in `claude plugin eval`: five cases per skill (three it should handle, two near-misses it must leave alone), each run three times with the skill and three times without, graded by a separate model. A skill ships only if Claude does better with it than without it. Results from 16/10/2026:
+Every skill is evaluated with Claude Code's built-in `claude plugin eval`: each case is run three times with the skill and three times without, graded by a separate model (Sonnet), and a skill ships only if Claude does better with it than without it. Every skill has three cases it should handle and two near-misses it must leave alone. The three skills where plain Claude already did well (agent-security, skill-builder, mcp-server-builder) also have harder cases where an expert answer differs from a generalist one: a recipient allowlist that still leaks other customers' data, an approval step that shows the model's own summary, a summariser sub-agent that launders injection, a server generated one tool per endpoint, JWTs decoded without verifying them, nginx forwarding the wrong Host, drafts lost across instances, a skill that loses its trigger to a sibling, one skill doing three jobs, a live key in a reference file.
 
-| Skill | Score with | Without | Gain |
-| --- | --- | --- | --- |
-| mcp-server-builder | 0.95 | 0.86 | +0.09 |
-| mcp-app-builder | 0.96 | 0.71 | +0.25 |
-| agent-security | 1.00 | 0.96 | +0.04 |
-| ship-with-agents | 0.93 | 0.64 | +0.29 |
-| skill-builder | 0.93 | 0.86 | +0.07 |
+| Skill | Cases | Score with | Without | Gain | Before, 16/10/2026 (5 cases): with / without / gain |
+| --- | --- | --- | --- | --- | --- |
+| mcp-server-builder | 9 | 0.90 | 0.76 | +0.14 | 0.95 / 0.86 / +0.09 |
+| mcp-app-builder | 5 | 0.96 | 0.71 | +0.25 | unchanged |
+| agent-security | 9 | 0.99 | 0.88 | +0.11 | 1.00 / 0.96 / +0.04 |
+| ship-with-agents | 5 | 0.93 | 0.64 | +0.29 | unchanged |
+| skill-builder | 8 | 0.93 | 0.69 | +0.24 | 0.93 / 0.86 / +0.07 |
 
-Small gains mean plain Claude already does well there; those skills earn their place on the cases it gets wrong.
+New results from 16/10/2026, version 0.2.0. On the same nine, nine and eight cases, the 0.1.0 skills scored 0.82 / 0.76 (mcp-server-builder), 0.91 / 0.88 (agent-security) and 0.89 / 0.74 (skill-builder), so the gains above come from the skills improving, not only from harder cases. The scores on the original five cases are kept for comparison.
 
 ## Install
 
@@ -89,7 +89,8 @@ service to work.
 The eval cases live in `evals/`, one folder per skill. From the repository root:
 
 ```bash
-claude plugin eval . --trust-plugin --scaffold --ablation with-without --runs 3 --no-publish
+claude plugin eval . --trust-plugin --scaffold --ablation with-without --runs 3 -j 4 \
+  --judge-model sonnet --allow-tools Write Edit Bash --no-publish
 ```
 
 Every push runs the same checks as CI: each skill through the validator, the manifests through `claude plugin validate`, and the unit tests for the bundled scripts:

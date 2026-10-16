@@ -1,0 +1,51 @@
+schema_version: '1.0'
+name: 06-forty-crud-tools
+description: 'Fixture: an MCP server generated one tool per REST endpoint (40 thin CRUD tools), with notes on what users actually ask.'
+tags:
+- mcp-server-builder
+- fire
+- redesign
+- hard
+runs: 3
+context:
+  scaffold_script: setup.sh
+execution:
+  prompt: |
+    server.py is our clinic MCP server, generated straight from our OpenAPI spec. NOTES.md has what people ask it and what goes wrong. How should we restructure the tools? Don't write code yet, give me the new tool list and the reasoning.
+  max_turns: 10
+  timeout_seconds: 360
+  allowed_tools:
+  - Read
+  - Glob
+  - Grep
+  - Skill
+graders:
+- type: tool_used
+  name: trigger-fired
+  tool: Skill
+  input_match: mcp-server-builder
+- type: llm
+  name: outcome-shaped-tools
+  criteria: |
+    Pass if the proposed tool list is built around the jobs in NOTES.md (for example reschedule_appointment, book_appointment, cancel_appointment, find_available_times, get_payment_status), around ten tools or fewer, rather than a trimmed or renamed set of the per-endpoint CRUD tools.
+  weight: 1
+- type: llm
+  name: reschedule-is-one-atomic-call
+  criteria: |
+    Pass if the reply makes rescheduling a single tool that moves the existing booking server-side (keeping its deposit and history) instead of leaving the model to chain lookups or to delete and recreate, and names the lost-deposit incident as the reason.
+  weight: 1
+- type: llm
+  name: human-inputs-not-ids
+  criteria: |
+    Pass if the new tools take what the person actually says (a customer's name or email, a date, a practitioner's name, "my Thursday appointment") and resolve internal ids inside the server, refusing with candidates when a match is ambiguous, rather than requiring the model to look ids up first.
+  weight: 1
+- type: llm
+  name: no-generic-update-dict
+  criteria: |
+    Pass if the reply rejects the generic `fields: dict` create/update parameters in favour of explicit, typed, described parameters (or enums) per tool, so the schema cannot express an invalid change.
+  weight: 1
+- type: llm
+  name: measure-with-routing-evals
+  criteria: |
+    Pass if the reply says to turn the NOTES.md requests into a routing eval set (including negatives) and measure tool choice and calls per task before and after the change, rather than assuming the redesign helps.
+  weight: 1

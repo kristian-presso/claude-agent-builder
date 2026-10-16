@@ -1,0 +1,43 @@
+schema_version: '1.0'
+name: 09-summary-subagent-split
+tags:
+- agent-security
+- fire
+- design
+- hard
+runs: 3
+execution:
+  prompt: |
+    Our research assistant has Google Drive read access and can send email for the user. To fix prompt injection from web pages, the plan is: a separate sub-agent with no tools except web fetch reads each page and writes a free-text summary of it, and only that summary goes back to the main agent. The main agent never sees raw HTML. That closes the hole, right? We want to ship Friday.
+  max_turns: 5
+  timeout_seconds: 180
+  allowed_tools:
+  - Read
+  - Glob
+  - Grep
+  - Skill
+graders:
+- type: tool_used
+  name: trigger-fired
+  tool: Skill
+  input_match: agent-security
+- type: llm
+  name: free-text-launders-injection
+  criteria: |
+    Pass if the reply explains that a free-text summary can carry the injection through: a page can instruct the summariser to include instructions in its summary (or the summariser faithfully reports "the page asks you to email X"), and the main agent, which holds Drive and email, then reads that text in its privileged context.
+  weight: 1
+- type: llm
+  name: constrain-the-channel
+  criteria: |
+    Pass if the reply recommends making the hand-back structurally narrow, for example a strict schema of typed fields, enums or extracted values that cannot carry instructions, or having the main agent handle the summary as an opaque value it displays to the user rather than reads as instructions.
+  weight: 1
+- type: llm
+  name: still-cut-egress
+  criteria: |
+    Pass if the reply says the split alone is not sufficient and recommends also removing or gating the exfiltration leg in the main agent, for example email sending requires human approval or is limited to an allowlist of recipients, so a successful injection still cannot send Drive data out.
+  weight: 1
+- type: llm
+  name: fetcher-egress
+  criteria: |
+    Pass if the reply notes the summariser's own web fetch is an outbound channel too, and that it must never be given private data (for example Drive content or the user's query details) in its context, or a page can make it request an attacker URL carrying that data.
+  weight: 1

@@ -47,6 +47,30 @@ these is a real failure rather than a degradation:
 Application state is still fine. Return an explicit id ("deploymentId") and let the model
 pass it back; the protocol is stateless, the product need not be.
 
+## Draft, then confirm, across instances
+
+The two-step pattern for anything that reaches a person (prepare a draft and show it, then
+confirm to send) needs the draft to survive between two requests that may land on
+different instances. The symptom of keeping it in a module-level dict is a fraction of
+confirms failing with "not found", in proportion to how many instances are running, and
+never locally.
+
+- **Store the draft outside the process**: a database, Redis, Firestore, or the downstream
+  system's own draft object, keyed by an unguessable id and with an expiry. Or make the
+  draft self-contained: a signed token carrying its content, verified on confirm.
+- **Bind the draft to what the person saw.** It is immutable once shown, bound to the
+  caller who created it, and confirm sends exactly that content (check the total or a hash
+  if anything could change it). A confirm must not be able to send a different draft or
+  someone else's.
+- **Consume it once, atomically** (get-and-delete, or a status change in a transaction), so
+  two confirms cannot both send.
+- **Refuse clearly when it is gone**: "That draft has expired or does not exist. Call
+  `draft_invoice` again and show the person the new preview before confirming." That is a
+  refusal, not a failure, so the model re-drafts instead of retrying or reporting success.
+
+Sticky sessions or a single instance hide the bug rather than fix it: a restart or a deploy
+still loses every pending draft.
+
 ## Python SDK knobs
 
 In the Python SDK (`mcp`), streamable HTTP takes `stateless_http` and `json_response`.

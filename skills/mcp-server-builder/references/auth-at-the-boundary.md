@@ -1,9 +1,50 @@
 # Authorisation at the boundary
 
+## Contents
+
+- Verify the token, all of it
+- Never pass the caller's token through
+- Verify at the HTTP boundary, gate inside every tool
+- The 401 that starts sign-in
+- The listing is a separate seam from the call
+- Just-in-time provisioning is an authorisation decision
+- Shared credentials
+- Prompts have no auth context
+
 Two boundaries, and they are not the same one. The **transport** boundary decides whether a
 request may reach the server at all. The **call** boundary decides whether this principal
 may run this tool with these arguments. A server that does only the first has authenticated
 a connection and authorised nothing.
+
+## Verify the token, all of it
+
+"The identity provider already checked the user" is the sentence behind most broken MCP
+auth. The provider checked the user when it issued the token; your server must check the
+token on every request, because anyone can send any string as a bearer header. Decoding a
+JWT without verifying its signature means anyone can mint one with any team or role.
+
+At the HTTP layer, before any tool runs:
+
+- **Signature**, against the provider's published keys (JWKS), with the algorithm pinned to
+  what the provider uses. Never accept `none`, never take the algorithm from the token.
+- **Issuer** (`iss`) is your provider.
+- **Audience** (`aud`) is this server. Without it, a token the same provider issued for a
+  different API or app is accepted here. The MCP authorization specification requires
+  tokens bound to the server they are for (resource indicators, RFC 8707).
+- **Expiry and not-before** (`exp`, `nbf`), with a small clock-skew allowance.
+
+Use the SDK's token-verifier hook or a middleware for this, so a request that fails never
+reaches a tool. Then authorise per call, below.
+
+## Never pass the caller's token through
+
+Forwarding the incoming bearer token to another API turns your server into a confused
+deputy: a token issued for this server is replayed against a system that never agreed to
+it, and that system cannot tell your server from the user. The MCP authorization
+specification forbids token passthrough. Call downstream APIs with the server's own
+credential, scoped to what the tool needs, or with a token obtained by an explicit
+exchange. Checked 16/10/2026; re-check the authorization section at
+modelcontextprotocol.io before citing it.
 
 ## Verify at the HTTP boundary, gate inside every tool
 
@@ -25,6 +66,11 @@ than letting each tool improvise:
 **Fail closed, every time.** No token means refuse, not "treat as anonymous". An unknown
 token means refuse. An exception inside the gate means refuse.
 
+**Prove every tool calls the gate.** Checks written into each tool body drift: one new tool
+without the call is an open door (an "export everything" tool for backups is the classic).
+Write a test that enumerates every registered tool, calls each with no principal and
+asserts the refusal. A tool added later without the gate then fails the build.
+
 A useful shape for rate limiting: raise a `RateLimited` error that **subclasses** the
 authorisation error. Every existing consumer keeps failing closed without being taught a new
 exception, and anything that wants to tell "slow down" from "not allowed" still can.
@@ -32,8 +78,10 @@ exception, and anything that wants to tell "slow down" from "not allowed" still 
 ## The 401 that starts sign-in
 
 An MCP client starts its OAuth flow from an HTTP `401` whose `WWW-Authenticate` header
-points at the server's protected-resource metadata. That is a transport response, not a
-tool error. A server that offers some anonymous tools must still send that challenge where a
+points at the server's protected-resource metadata (RFC 9728). That is a transport
+response, not a tool error. A tool result such as an empty list or `{"error": "login
+required"}` is the wrong layer: the client never learns that signing in is the fix, and an
+empty list reads as "nothing found". A server that offers some anonymous tools must still send that challenge where a
 signed-in call is needed, or the client never offers the user a sign-in.
 
 As of the `2026-07-28` spec, Dynamic Client Registration is deprecated in favour of Client
