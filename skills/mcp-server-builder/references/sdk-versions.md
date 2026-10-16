@@ -8,7 +8,7 @@ a defect that has since been fixed sends you round a problem that is not there.
 
 Checked 16/10/2026 on PyPI (pypi.org/project/mcp/#history): `latest` is **2.3.0** (released
 02/10/2026). The 1.x line is still maintained alongside 2.x: its newest release is
-**1.29.1** (24/08/2026), after 2.0.0 shipped on 28/07/2026. Do not assume 1.x has ended;
+**1.30.0** (07/09/2026), after 2.0.0 shipped on 28/07/2026. Do not assume 1.x has ended;
 ask the index.
 
 ```bash
@@ -17,10 +17,10 @@ python -c "import mcp, pathlib; print(pathlib.Path(mcp.__file__).parent)"   # wh
 ```
 
 What the 2.x major changed, for anyone porting a 1.x server (verified by running the same
-server on both; the 1.x column was first checked on 1.27.2 and re-checked on 1.29.1 on
+server on both; the 1.x column was first checked on 1.27.2 and re-checked on 1.30.0 on
 16/10/2026):
 
-| | 1.29.1 | 2.3.0 |
+| | 1.30.0 | 2.3.0 |
 | --- | --- | --- |
 | Server class | `from mcp.server.fastmcp import FastMCP` | `from mcp.server.mcpserver import MCPServer` (the old import raises with a pointer to the migration guide) |
 | Annotation attributes | `ann.readOnlyHint` | `ann.read_only_hint` (wire names unchanged) |
@@ -32,7 +32,7 @@ server on both; the 1.x column was first checked on 1.27.2 and re-checked on 1.2
 Pin the version deliberately in `pyproject.toml` and record why. If something else in the
 project depends on `mcp-types` or `httpx`, check the resolver before taking the bump.
 
-## Gotchas that hold on both 1.29.1 and 2.3.0
+## Gotchas that hold on both 1.30.0 and 2.3.0
 
 Each was re-checked by reading the installed source on 16/10/2026 (first found on 1.27.2).
 

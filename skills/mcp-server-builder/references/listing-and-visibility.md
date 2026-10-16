@@ -11,7 +11,7 @@ scope, so registration cannot depend on who is asking. The per-request seam is t
 **listing**.
 
 In the Python SDK, subclassing the server and overriding `list_tools` is enough, because
-the low-level handler calls `self.list_tools` (checked on `mcp` 1.29.1 and 2.3.0, 16/10/2026):
+the low-level handler calls `self.list_tools` (checked on `mcp` 1.30.0 and 2.3.0, 16/10/2026):
 
 ```python
 class RoleFilteredMCP(MCPServer):  # FastMCP on SDK 1.x

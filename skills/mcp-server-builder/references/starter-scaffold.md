@@ -15,7 +15,7 @@ fail-closed gate, a curated listing, and tests at levels 1 and 2 from
 
 **Tested** on 16/10/2026: written out exactly as below, `pip install -e ".[dev]" && pytest`
 gives 9 passed on `mcp` 2.3.0 (Python 3.13). The same code with the imports changed
-(see the end) and `mcp==1.29.1` gives 9 passed on 1.29.1. The plugin's own
+(see the end) and `mcp==1.30.0` gives 9 passed on 1.30.0. The plugin's own
 `tests/test_starter_scaffold.py` extracts these files and re-runs that check.
 
 **Write it into the user's project, not a temp directory.** A server belongs beside the

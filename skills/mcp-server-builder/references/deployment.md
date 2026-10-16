@@ -6,7 +6,7 @@ problems and none of these controls.
 ## The Host allowlist that 421s everything
 
 The Python SDK ships DNS-rebinding protection in `mcp/server/transport_security.py`. These
-facts were re-checked against both `mcp` 1.29.1 and 2.3.0 on 16/10/2026, by reading the
+facts were re-checked against both `mcp` 1.30.0 and 2.3.0 on 16/10/2026, by reading the
 source and by sending real requests:
 
 1. **The middleware's own default is off.** Constructed with no settings it falls back to

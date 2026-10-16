@@ -39,8 +39,8 @@ Customize, Skills.
 Both starters were written out from their reference files exactly as published and run on
 16 October 2026:
 
-- **mcp-server-builder**: the Python server installs and its 8 tests (in-process and over
-  stdio) pass on `mcp` 2.3.0, and on 1.29.1 (the newest 1.x release, 24/08/2026,
+- **mcp-server-builder**: the Python server installs and its 9 tests (in-process and over
+  stdio) pass on `mcp` 2.3.0, and on 1.30.0 (the newest 1.x release, 07/09/2026,
   per PyPI) with the one-line import change the reference describes. The Host-allowlist and Content-Type behaviour described in its deployment notes
   was checked by sending real HTTP requests.
 - **mcp-app-builder**: the Worker project installs, builds its view, typechecks and bundles,

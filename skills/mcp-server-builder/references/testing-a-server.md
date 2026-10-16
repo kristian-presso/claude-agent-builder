@@ -19,7 +19,7 @@ Three assertions worth writing once and keeping forever:
 
 Read annotations by their wire names (`model_dump(by_alias=True)`), not by attribute: the
 Python SDK renamed the attributes to snake case in 2.x while the wire names stayed the same.
-The scaffold's tests do this and pass on both 1.29.1 and 2.3.0 (re-run 16/10/2026).
+The scaffold's tests do this and pass on both 1.30.0 and 2.3.0 (re-run 16/10/2026).
 
 ## Level 2: over the protocol
 

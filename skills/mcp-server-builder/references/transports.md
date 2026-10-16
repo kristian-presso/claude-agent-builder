@@ -50,8 +50,8 @@ pass it back; the protocol is stateless, the product need not be.
 ## Python SDK knobs
 
 In the Python SDK (`mcp`), streamable HTTP takes `stateless_http` and `json_response`.
-On 1.x (checked on 1.29.1, 16/10/2026), passing `session_idle_timeout` with stateless mode
-raises at start-up; on 2.3.0
+On 1.29.1, passing `session_idle_timeout` with stateless mode raises at start-up;
+on 1.30.0 and 2.3.0 (checked on 1.30.0, 16/10/2026)
 the timeout is simply unused in stateless mode. Check your installed version's
 `server/streamable_http_manager.py` rather than trusting either sentence.
 

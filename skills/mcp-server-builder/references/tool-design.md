@@ -34,7 +34,7 @@ injection-shaped descriptions.
 
 The specification allows 1 to 128 characters of `A-Z a-z 0-9 _ - .`, case-sensitive. The
 Python SDK has that as a regex, but **validation never blocks registration**: it logs a
-warning and registers the tool anyway (checked against `mcp` 1.29.1 and 2.3.0, 16/10/2026). A name with a space in it starts cleanly and fails later at whichever client is
+warning and registers the tool anyway (checked against `mcp` 1.30.0 and 2.3.0, 16/10/2026). A name with a space in it starts cleanly and fails later at whichever client is
 stricter, where it looks like a client bug.
 
 1. **Validate names yourself, in a test.** Assert every registered name against the regex.
