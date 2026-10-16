@@ -59,6 +59,10 @@ vary: the SDK and runtime you build on, where your specs and test prompts live, 
 runtime you secure, where your skills are saved. None needs a particular directory layout or
 service to work.
 
+## Feedback
+
+Used one of these? [Tell me what worked and what broke](https://tally.so/r/7XlJbL?source=agent-builder) - two minutes, every answer read.
+
 ## Licence
 
 MIT.
