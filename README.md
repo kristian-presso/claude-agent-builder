@@ -1,38 +1,63 @@
-# agent-builder
+# Agent builder skills for Claude
 
-Five skills for people building things with Claude: MCP servers and the apps that sit on
-them, agents that are safe to give real access to, shipping multi-step work with coding
-agents, and turning a process you do by hand into a skill.
+**Build MCP servers, MCP Apps and agents that actually work, and prove it before you ship.**
 
-They share one conviction. **The expensive failure is not code that breaks; it is work that
-reports success and is wrong.** A server that starts cleanly and is unreachable through the
-proxy. A view that passes every check and shows a figure nobody can source. An agent that
-completed every task and missed the point. A skill with a perfect body and a description
-that never triggers. Each skill here is built around the check that catches its version of
-that.
+```bash
+/plugin marketplace add kristian-presso/claude-agent-builder
+/plugin install agent-builder@claude-agent-builder
+```
+
+One department of [claude-skills](https://github.com/kristian-presso/claude-skills), where all departments live in one place. Free, MIT licensed, no sign-up.
+
+Five skills for people building things with Claude: MCP servers and the apps that sit on them, agents that are safe to give real access to, shipping multi-step work with coding agents, and turning a process you do by hand into a skill. They share one conviction: **the expensive failure is not code that breaks; it is work that reports success and is wrong.** Each skill is built around the check that catches its version of that.
 
 ## Skills
 
 | Skill | Use it when |
 | --- | --- |
-| **mcp-server-builder** | You are building an MCP server, adding tools to one, auditing one before release, or preparing it for the Claude or ChatGPT directory. Includes a tested Python starter. |
-| **mcp-app-builder** | You want an MCP tool's result to render as an interactive view in the conversation, or need to prove an existing view actually works. Decides first whether it deserves a UI at all. Includes a tested serverless starter. |
-| **agent-security** | You are designing or reviewing an agent, adding a tool or MCP server to it, giving it credentials, or letting it read the web or email. Maps the lethal trifecta and finds the one change that removes the most risk. |
-| **ship-with-agents** | Work spans several phases, files or repositories, or is being split across subagents, and you need to know it is actually done. Criteria that can fail, verification by an agent that never saw the plan. |
-| **skill-builder** | You keep explaining the same task to Claude from scratch, or a skill you wrote is not triggering. Interviews you, writes the skill, tests it, and validates it with a bundled script. |
+| [mcp-server-builder](skills/mcp-server-builder/SKILL.md) | Building or auditing an MCP server: outcome-shaped tools, auth at the boundary, tests, deployment and directory listing. Includes a tested Python starter. |
+| [mcp-app-builder](skills/mcp-app-builder/SKILL.md) | Building an MCP App (interactive UI inside the chat) and proving it works before you ship it. |
+| [agent-security](skills/agent-security/SKILL.md) | Giving an agent a new tool, credentials or untrusted input. Checks for the lethal trifecta and removes a leg rather than adding warnings. |
+| [ship-with-agents](skills/ship-with-agents/SKILL.md) | Running real work through coding agents: discuss, plan, execute, verify blind, ship. |
+| [skill-builder](skills/skill-builder/SKILL.md) | Turning a process you do by hand into a reusable skill, with a validator. |
+
+## Tested, not just written
+
+Every skill is evaluated with Claude Code's built-in `claude plugin eval`: five cases per skill (three it should handle, two near-misses it must leave alone), each run three times with the skill and three times without, graded by a separate model. A skill ships only if Claude does better with it than without it. Results from 16/10/2026:
+
+| Skill | Score with | Without | Gain |
+| --- | --- | --- | --- |
+| mcp-server-builder | 0.95 | 0.86 | +0.09 |
+| mcp-app-builder | 0.96 | 0.71 | +0.25 |
+| agent-security | 1.00 | 0.96 | +0.04 |
+| ship-with-agents | 0.93 | 0.64 | +0.29 |
+| skill-builder | 0.93 | 0.86 | +0.07 |
+
+Small gains mean plain Claude already does well there; those skills earn their place on the cases it gets wrong.
 
 ## Install
 
-In Claude Code:
+### Claude Code
+
+On its own, from this repository:
+
+```bash
+/plugin marketplace add kristian-presso/claude-agent-builder
+/plugin install agent-builder@claude-agent-builder
+```
+
+Or with every other department, from the hub:
 
 ```bash
 /plugin marketplace add kristian-presso/claude-skills
 /plugin install agent-builder@claude-skills
 ```
 
-On claude.ai or the Claude desktop app, zip any skill folder (for example
-`skills/agent-security/`) so the folder is at the root of the zip, and upload it under
-Customize, Skills.
+Use one or the other, not both, or the skills load twice.
+
+### Claude app
+
+On claude.ai or the Claude desktop app, download this repository as a zip (Code, then Download ZIP), take the folder of the skill you want from `skills/` (the one containing `SKILL.md`), zip that folder on its own and upload it in your skills settings. Each skill works on its own.
 
 ## What "tested" means here
 
@@ -59,10 +84,38 @@ vary: the SDK and runtime you build on, where your specs and test prompts live, 
 runtime you secure, where your skills are saved. None needs a particular directory layout or
 service to work.
 
+## Re-run the evals and tests
+
+The eval cases live in `evals/`, one folder per skill. From the repository root:
+
+```bash
+claude plugin eval . --trust-plugin --scaffold --ablation with-without --runs 3 --no-publish
+```
+
+Every push runs the same checks as CI: each skill through the validator, the manifests through `claude plugin validate`, and the unit tests for the bundled scripts:
+
+```bash
+for d in skills/*/; do python3 skills/skill-builder/scripts/validate_skill.py "$d"; done
+claude plugin validate .
+python3 -m unittest discover -s tests -v
+```
+
+Tests are standard-library Python, so they need no installs.
+
 ## Feedback
 
-Used one of these? [Tell me what worked and what broke](https://tally.so/r/7XlJbL?source=agent-builder) - two minutes, every answer read.
+Two minutes on [this form](https://tally.so/r/7XlJbL?source=agent-builder) tells me what worked, what broke and what to build next. Every answer gets read. Bugs with steps to reproduce are best as a GitHub issue: if a skill fired when it should not have, did not fire when it should, or produced the wrong thing, tell me what you typed and what happened.
+
+## More departments
+
+This is one of five. [claude-skills](https://github.com/kristian-presso/claude-skills) has all departments in one place: operator discipline, building with Claude, go-to-market, marketing and UK business, installable together or one at a time.
+
+## All of it in one install
+
+These skills also run inside [Corey](https://getcorey.ai), alongside the rest of the library I use to run my business: one install that already knows your business, remembers it between chats and keeps itself up to date. It is free for individuals.
 
 ## Licence
 
-MIT.
+[MIT](LICENSE). Take them, fork them, strip the parts you disagree with.
+
+How these were built, and why, is written up at [kristianpapadakis.com/guides](https://kristianpapadakis.com/guides).

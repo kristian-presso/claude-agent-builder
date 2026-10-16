@@ -15,7 +15,7 @@ To run group 2, install the SDK version the starter pins, in a virtual environme
 
     python3 -m venv .venv
     .venv/bin/pip install "mcp==2.3.0" pytest pytest-asyncio
-    .venv/bin/python -m unittest discover -s plugins/agent-builder/tests -v
+    .venv/bin/python -m unittest discover -s tests -v
 
 With plain `python3` and no `mcp`, group 2 reports as skipped, not passed.
 """

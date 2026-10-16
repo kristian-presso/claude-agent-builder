@@ -12,7 +12,7 @@ Unit tests for the scripts and starter code this plugin ships. Python `unittest`
 Standard library only (the starter's behaviour tests report as skipped):
 
 ```bash
-python3 -m unittest discover -s plugins/agent-builder/tests -v
+python3 -m unittest discover -s tests -v
 ```
 
 Everything, including the starter's behaviour tests and its own pytest suite, needs the SDK
@@ -21,7 +21,7 @@ version the starter pins:
 ```bash
 python3 -m venv .venv
 .venv/bin/pip install "mcp==2.3.0" pytest pytest-asyncio
-.venv/bin/python -m unittest discover -s plugins/agent-builder/tests -v
+.venv/bin/python -m unittest discover -s tests -v
 ```
 
 Run from the repository root. When the starter's pin moves, change it here too.

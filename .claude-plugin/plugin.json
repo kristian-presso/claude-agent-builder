@@ -6,7 +6,7 @@
     "name": "Kristian Papadakis",
     "url": "https://kristianpapadakis.com"
   },
-  "homepage": "https://github.com/kristian-presso/claude-skills",
+  "homepage": "https://github.com/kristian-presso/claude-agent-builder",
   "license": "MIT",
   "keywords": [
     "mcp",
@@ -19,5 +19,6 @@
     "verification",
     "skills",
     "skill-authoring"
-  ]
+  ],
+  "repository": "https://github.com/kristian-presso/claude-agent-builder"
 }
