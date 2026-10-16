@@ -14,9 +14,9 @@ fail-closed gate, a curated listing, and tests at levels 1 and 2 from
 [testing-a-server.md](testing-a-server.md). Every file is given in full.
 
 **Tested** on 16/10/2026: written out exactly as below, `pip install -e ".[dev]" && pytest`
-gives 8 passed on `mcp` 2.3.0 (Python 3.13). The same code with the one import changed
-(see the end) and `mcp==1.29.1` gives 8 passed on 1.29.1, the newest 1.x release on that
-date.
+gives 9 passed on `mcp` 2.3.0 (Python 3.13). The same code with the imports changed
+(see the end) and `mcp==1.29.1` gives 9 passed on 1.29.1. The plugin's own
+`tests/test_starter_scaffold.py` extracts these files and re-runs that check.
 
 **Write it into the user's project, not a temp directory.** A server belongs beside the
 business it serves, in a repo they own. Rename `example_server` to something specific to
@@ -77,9 +77,15 @@ and ask the package manager what is current; never type a version from memory.
 ```python
 """The gate. One function, called by every tool, failing closed."""
 
+from mcp.server.mcpserver.exceptions import ToolError
 
-class NotAuthorised(Exception):
-    """The caller may not do this. Always fail closed."""
+
+class NotAuthorised(ToolError):
+    """The caller may not do this. Always fail closed.
+
+    Subclasses the SDK's ToolError on purpose: the SDK passes a ToolError's text to
+    the model, but replaces any other exception with a bare "Error executing tool
+    <name>", so a refusal raised as a plain Exception loses its wording on the wire."""
 
 
 class RateLimited(NotAuthorised):
@@ -124,6 +130,7 @@ def _lookup(token: str, *, allow_degraded: bool) -> str | None:
 """Tool declarations. Intent is declared once; the annotations are derived."""
 
 from mcp.server.mcpserver import MCPServer
+from mcp.server.mcpserver.exceptions import ToolError
 from mcp.types import ToolAnnotations
 
 from example_server.auth import require_caller
@@ -180,10 +187,15 @@ def register(app: MCPServer, *, token_of_request) -> None:
         """
         account = require_caller(token_of_request())
         if not title.strip():
-            raise ValueError(
-                "title is required and must come from the person, not be inferred."
-            )
+            # ToolError, not ValueError: only a ToolError's text reaches the model.
+            raise ToolError(TITLE_REQUIRED)
         return {"account": account, "added": title.strip()}
+
+
+TITLE_REQUIRED = (
+    "title is required and must come from the person, not be inferred. "
+    "Ask them what to call the item, then retry."
+)
 
 
 def _items(account: str) -> list[dict]:
@@ -350,14 +362,30 @@ import sys
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 
+from example_server.auth import NOT_AUTHENTICATED
+
+PARAMS = StdioServerParameters(command=sys.executable, args=["-m", "example_server.app"])
+
 
 async def test_tools_list_over_stdio():
-    params = StdioServerParameters(command=sys.executable, args=["-m", "example_server.app"])
-    async with stdio_client(params) as (read, write):
+    async with stdio_client(PARAMS) as (read, write):
         async with ClientSession(read, write) as session:
             await session.initialize()
             listed = await session.list_tools()
             assert {t.name for t in listed.tools} == {"list_items", "add_item"}
+
+
+async def test_refusal_wording_reaches_the_client():
+    """The in-process tests prove the gate raises the right words. This proves the
+    words survive the SDK and the wire: a refusal raised as anything but a ToolError
+    arrives as a bare "Error executing tool list_items"."""
+    async with stdio_client(PARAMS) as (read, write):
+        async with ClientSession(read, write) as session:
+            await session.initialize()
+            result = await session.call_tool("list_items", {})
+            # 2.x names the flag is_error; 1.x names it isError.
+            assert getattr(result, "is_error", getattr(result, "isError", None)) is True
+            assert NOT_AUTHENTICATED in result.content[0].text
 ```
 
 ## Running it
@@ -397,10 +425,16 @@ deliberate: the starter fails closed.
 
 ## Porting to SDK 1.x
 
-If the project must stay on 1.x, change the import in `app.py` and `tools.py`:
+If the project must stay on 1.x, change the imports in `app.py` and `tools.py`:
 
 ```python
 from mcp.server.fastmcp import FastMCP as MCPServer
+```
+
+and the `ToolError` import in `auth.py` and `tools.py`:
+
+```python
+from mcp.server.fastmcp.exceptions import ToolError
 ```
 
 and pin `mcp` to the 1.x version you chose. Nothing else changes: the tests read annotations

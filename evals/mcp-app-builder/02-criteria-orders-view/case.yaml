@@ -1,0 +1,32 @@
+schema_version: '1.0'
+name: 02-criteria-orders-view
+tags:
+- mcp-app-builder
+- fire
+- criteria
+runs: 3
+execution:
+  prompt: |
+    I want to add an MCP App view to my list_orders tool so shop owners can search and filter their orders. Before building, write me the acceptance criteria.
+  max_turns: 5
+  timeout_seconds: 240
+  allowed_tools:
+  - Read
+  - Glob
+  - Grep
+  - Skill
+graders:
+- type: tool_used
+  name: trigger-fired
+  tool: Skill
+  input_match: mcp-app-builder
+- type: llm
+  name: criteria-can-fail
+  criteria: |
+    Pass only if at least FOUR of these FIVE hold:
+    1. A criterion that drives the filter in the rendered view (typing into the view's input narrows visible rows), not only via the tool's query parameter.
+    2. A criterion for the empty state: no orders shows a message in words in both the view and the text fallback.
+    3. A criterion that the tool always returns a text content block alongside structuredContent, checked for every app tool (counted or called, not grepped once).
+    4. A criterion that a value shown in both the view and the text (for example an order time) agrees between them.
+    5. Verification reported as pass / fail / unmeasured, with unmeasured blocking a ship, or a rendered check in a real host.
+  weight: 2

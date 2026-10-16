@@ -1,0 +1,30 @@
+schema_version: '1.0'
+name: 03-vague-keep-explaining
+tags:
+- skill-builder
+- fire
+- vague
+runs: 3
+execution:
+  prompt: |
+    I keep explaining to Claude how I want my client proposals formatted, every single time. Can we fix that?
+  max_turns: 4
+  timeout_seconds: 150
+  allowed_tools:
+  - Read
+  - Glob
+  - Grep
+  - Skill
+graders:
+- type: tool_used
+  name: trigger-fired
+  tool: Skill
+  input_match: skill-builder
+- type: llm
+  name: interviews-one-at-a-time
+  criteria: |
+    Pass only if ALL hold:
+    1. It proposes capturing this as a reusable skill (or equivalent persistent instruction) rather than just giving formatting tips.
+    2. It asks ONE question to start (for example what the proposal format is, or for a real example), not a long list of questions at once.
+    3. It does not invent the proposal format.
+  weight: 2

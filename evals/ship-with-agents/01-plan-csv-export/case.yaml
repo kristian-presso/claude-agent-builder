@@ -1,0 +1,32 @@
+schema_version: '1.0'
+name: 01-plan-csv-export
+tags:
+- ship-with-agents
+- fire
+- plan
+runs: 3
+execution:
+  prompt: |
+    Plan this build: add CSV export to the reports page and to the public API. I'll have Claude Code subagents do the work.
+  max_turns: 5
+  timeout_seconds: 240
+  allowed_tools:
+  - Read
+  - Glob
+  - Grep
+  - Skill
+graders:
+- type: tool_used
+  name: trigger-fired
+  tool: Skill
+  input_match: ship-with-agents
+- type: llm
+  name: criteria-that-can-fail
+  criteria: |
+    Pass only if at least FOUR of these FIVE hold:
+    1. Acceptance criteria are written before the build, and at least two are specific enough that a wrong build would fail them (for example a zero-row report returns a header-only CSV with 200; a field containing a comma round-trips unchanged).
+    2. An explicit out-of-scope list.
+    3. Each planned task names the files or area it touches and how it will be verified.
+    4. Verification is done by a fresh agent that gets only the criteria and the diff (blind), not by the builder.
+    5. Criteria report pass / fail / unmeasured and unmeasured blocks shipping, or it says to check for existing open PRs or branches before starting.
+  weight: 2

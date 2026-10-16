@@ -70,7 +70,9 @@ class Report:
 
 def split_frontmatter(text: str) -> tuple[dict[str, str], str] | None:
     """Return (fields, body) or None. Parses the simple 'key: value' form skills use,
-    including folded values continued on indented lines, without needing PyYAML."""
+    including folded values continued on indented lines, without needing PyYAML.
+    Windows line endings are accepted: a SKILL.md saved with CRLF is still valid."""
+    text = text.replace("\r\n", "\n")
     if not text.startswith("---\n"):
         return None
     end = text.find("\n---", 4)
@@ -104,7 +106,11 @@ def check(folder: Path, extra_patterns: list[str]) -> int:
     if not skill_md.is_file():
         r.fail(f"{skill_md} not found")
         return 1
-    text = skill_md.read_text(encoding="utf-8")
+    try:
+        text = skill_md.read_text(encoding="utf-8")
+    except UnicodeDecodeError:
+        r.fail("SKILL.md is not valid UTF-8; save it as UTF-8")
+        return 1
     parsed = split_frontmatter(text)
     if parsed is None:
         r.fail("SKILL.md must start with frontmatter between two '---' lines, as 'key: value' pairs")
@@ -176,7 +182,7 @@ def check(folder: Path, extra_patterns: list[str]) -> int:
     for ref in sorted(folder.rglob("*.md")):
         if ref == skill_md:
             continue
-        ref_lines = ref.read_text(encoding="utf-8").splitlines()
+        ref_lines = ref.read_text(encoding="utf-8", errors="replace").splitlines()
         if len(ref_lines) > TOC_THRESHOLD and not any(
             re.match(r"^#+\s*(contents|table of contents)\s*$", l, re.I) for l in ref_lines[:15]
         ):

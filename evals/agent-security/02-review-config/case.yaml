@@ -1,0 +1,34 @@
+schema_version: '1.0'
+name: 02-review-config
+tags:
+- agent-security
+- fire
+- review
+runs: 3
+context:
+  scaffold_script: setup.sh
+execution:
+  prompt: |
+    Can this agent be prompt injected? Config is in .mcp.json and agent.md.
+  max_turns: 8
+  timeout_seconds: 240
+  allowed_tools:
+  - Read
+  - Glob
+  - Grep
+  - Skill
+graders:
+- type: tool_used
+  name: trigger-fired
+  tool: Skill
+  input_match: agent-security
+- type: llm
+  name: specific-findings
+  criteria: |
+    Pass only if at least FOUR of these FIVE hold:
+    1. It maps the trifecta: private data (private repo via a broad token), untrusted content (web pages), exfiltration (GitHub issue creation and/or unrestricted network).
+    2. It says the "ignore instructions on web pages" system prompt line is not a sufficient defence.
+    3. It flags the long-lived, over-scoped classic PAT and recommends a short-lived, narrowly scoped token (or proxy injection) instead.
+    4. It flags the unpinned @latest server and/or unpinned versions as a supply-chain risk.
+    5. It recommends default-deny network egress with an allowlist, or splitting the browsing context from the context that holds the token.
+  weight: 2

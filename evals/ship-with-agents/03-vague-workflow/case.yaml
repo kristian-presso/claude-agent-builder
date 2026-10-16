@@ -1,0 +1,31 @@
+schema_version: '1.0'
+name: 03-vague-workflow
+tags:
+- ship-with-agents
+- fire
+- vague
+runs: 3
+execution:
+  prompt: |
+    How do I know the agent actually finished? It keeps telling me things are done when they're not.
+  max_turns: 4
+  timeout_seconds: 150
+  allowed_tools:
+  - Read
+  - Glob
+  - Grep
+  - Skill
+graders:
+- type: tool_used
+  name: trigger-fired
+  tool: Skill
+  input_match: ship-with-agents
+- type: llm
+  name: structural-answer
+  criteria: |
+    Pass only if at least THREE of these FOUR hold:
+    1. Write acceptance criteria up front that can fail (could a wrong build pass it? then rewrite it).
+    2. Blind verification: a separate agent that gets the criteria and diff only.
+    3. Each check reports pass, fail or unmeasured, and unmeasured counts as not done.
+    4. A blocked step must declare the block rather than produce plausible prose; state lives in artefacts on disk, not in chat.
+  weight: 2

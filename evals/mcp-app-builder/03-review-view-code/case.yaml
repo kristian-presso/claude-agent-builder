@@ -1,0 +1,35 @@
+schema_version: '1.0'
+name: 03-review-view-code
+tags:
+- mcp-app-builder
+- fire
+- review
+runs: 3
+context:
+  scaffold_script: setup.sh
+execution:
+  prompt: |
+    My MCP App view renders in my local test harness but shows nothing in Claude, and sometimes the first result never appears. Can you review server/app.ts and view/main.ts?
+  max_turns: 8
+  timeout_seconds: 240
+  allowed_tools:
+  - Read
+  - Glob
+  - Grep
+  - Skill
+graders:
+- type: tool_used
+  name: trigger-fired
+  tool: Skill
+  input_match: mcp-app-builder
+- type: llm
+  name: finds-real-defects
+  criteria: |
+    Pass only if at least FOUR of these SIX are identified:
+    1. The tool is registered only when the client advertises UI support; it should be registered unconditionally.
+    2. The tool returns only structuredContent with no text content block, so hosts without UI get nothing.
+    3. ontoolresult is attached after connect(), so the first tool result can be missed; handlers must be registered before connect().
+    4. The CSP / ui metadata is declared on the tool's _meta rather than in the resource read callback's contents, and/or a CSP is declared when the view makes no network requests.
+    5. Customer names are interpolated into innerHTML without escaping.
+    6. Literal background colour instead of host CSS variables.
+  weight: 2

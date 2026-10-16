@@ -1,0 +1,49 @@
+schema_version: '1.0'
+name: 01-audit-bad-server
+description: 'Fixture: a deliberately badly designed MCP server to audit.'
+tags:
+- mcp-server-builder
+- fire
+- audit
+runs: 3
+context:
+  scaffold_script: setup.sh
+execution:
+  prompt: |
+    Audit the MCP server in server.py before I list it in the Claude directory. Don't change anything, just tell me where it stands.
+  max_turns: 10
+  timeout_seconds: 300
+  allowed_tools:
+  - Read
+  - Glob
+  - Grep
+  - Skill
+graders:
+- type: tool_used
+  name: trigger-fired
+  tool: Skill
+  input_match: mcp-server-builder
+- type: tool_used
+  name: no-edits-in-audit
+  tool: Edit
+  arm: both
+  weight: 0.5
+  min: 0
+  max: 0
+- type: llm
+  name: audit-judgement
+  criteria: |
+    Pass only if at least FIVE of these SEVEN findings are present and correct:
+    1. BookingTool mixes read, write and destructive actions behind an action flag; it should be split into separate tools (for example list_bookings, create_booking, cancel_booking), with cancel as destructive.
+    2. Tool names break naming rules (BookingTool is not lowercase, underscore-separated, verb first).
+    3. No tool sets annotations (readOnlyHint, destructiveHint, title); an omitted destructiveHint defaults to destructive for non-read tools.
+    4. create silently guesses a date ("tomorrow 10:00") instead of refusing without one.
+    5. get_customer_history returns a plausible empty answer ({"visits": []}) when there is no token, instead of refusing with an actionable message; auth is not enforced on the other tools at all.
+    6. Descriptions such as "Does booking stuff." and "List services." do not tell a model when to use the tool or which sibling to prefer.
+    7. The HTTP run binds 0.0.0.0 with no Host/Origin allowlist (transport security), and/or there are no tests and no routing (golden prompt) evals.
+  weight: 2
+- type: llm
+  name: stage-verdicts
+  criteria: |
+    Pass if the reply gives per-stage or per-area verdicts using pass / fail / missing / unmeasured (or equivalent explicit statuses), says plainly the server is not ready to list, and states which things it could not measure (for example that nothing was run) rather than implying it tested the server.
+  weight: 1

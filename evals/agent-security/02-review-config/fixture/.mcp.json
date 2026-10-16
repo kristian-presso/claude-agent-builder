@@ -1,0 +1,6 @@
+{
+  "mcpServers": {
+    "browser": {"command": "npx", "args": ["-y", "some-browser-mcp@latest"]},
+    "github": {"command": "npx", "args": ["-y", "github-mcp"], "env": {"GITHUB_TOKEN": "${GITHUB_PAT}"}}
+  }
+}

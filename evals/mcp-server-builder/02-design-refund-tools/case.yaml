@@ -1,0 +1,32 @@
+schema_version: '1.0'
+name: 02-design-refund-tools
+tags:
+- mcp-server-builder
+- fire
+- build
+runs: 3
+execution:
+  prompt: |
+    I want to build an MCP server for my online shop so Claude can look up orders and issue refunds for customers. Before any code, spec the tools for me: names, descriptions, annotations, refusals. Keep it to the tool spec.
+  max_turns: 6
+  timeout_seconds: 240
+  allowed_tools:
+  - Read
+  - Glob
+  - Grep
+  - Skill
+graders:
+- type: tool_used
+  name: trigger-fired
+  tool: Skill
+  input_match: mcp-server-builder
+- type: llm
+  name: tool-spec-judgement
+  criteria: |
+    Pass only if ALL hold:
+    1. Reading orders and issuing refunds are separate tools (no single tool with a mode/action flag).
+    2. The refund tool is classed destructive (destructiveHint true) and the lookup tool read-only (readOnlyHint true), with hints set explicitly.
+    3. Names are lowercase, underscore-separated and verb first (for example get_order, refund_order).
+    4. At least one refusal is specified for a missing or guessed value on the refund (for example amount or order id must come from the person; the tool refuses rather than guessing), worded with what to do next.
+    5. It mentions writing routing evals (direct, indirect and negative prompts, for example "what is your refund policy?" must not call the refund tool) before or alongside the descriptions.
+  weight: 2

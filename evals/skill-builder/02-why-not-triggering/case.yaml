@@ -1,0 +1,35 @@
+schema_version: '1.0'
+name: 02-why-not-triggering
+tags:
+- skill-builder
+- fire
+- debug
+runs: 3
+context:
+  scaffold_script: setup.sh
+execution:
+  prompt: |
+    My skill in skills/invoice-helper/ never triggers. Why?
+  max_turns: 8
+  timeout_seconds: 240
+  allowed_tools:
+  - Read
+  - Glob
+  - Grep
+  - Edit
+  - Write
+  - Skill
+graders:
+- type: tool_used
+  name: trigger-fired
+  tool: Skill
+  input_match: skill-builder
+- type: llm
+  name: diagnoses-description
+  criteria: |
+    Pass only if at least THREE of these FOUR are identified:
+    1. The name "My Helper" is invalid (must be lowercase letters, digits and hyphens) and does not match the folder name invoice-helper.
+    2. The description is first person ("I can") rather than third person.
+    3. The description has no "Use when ..." and no concrete trigger phrases a user would actually type.
+    4. The description is too vague ("invoices and stuff") to match requests, and it proposes a concrete rewritten description.
+  weight: 2

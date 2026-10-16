@@ -1,0 +1,30 @@
+schema_version: '1.0'
+name: 02-subagent-said-done
+tags:
+- ship-with-agents
+- fire
+- verify
+runs: 3
+execution:
+  prompt: |
+    My subagent says the migration is done and all tests pass. Can I merge?
+  max_turns: 4
+  timeout_seconds: 150
+  allowed_tools:
+  - Read
+  - Glob
+  - Grep
+  - Skill
+graders:
+- type: tool_used
+  name: trigger-fired
+  tool: Skill
+  input_match: ship-with-agents
+- type: llm
+  name: report-is-a-claim
+  criteria: |
+    Pass only if ALL hold:
+    1. It treats the subagent's report as a claim, not evidence, and says what evidence to check (the test run output, the diff, the migration actually applied), rather than saying yes.
+    2. It recommends verification by someone or something other than the builder (a fresh agent with the criteria and diff, or a reviewer).
+    3. It does not simply answer "yes, merge".
+  weight: 2
