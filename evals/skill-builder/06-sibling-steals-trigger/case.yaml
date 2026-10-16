@@ -1,0 +1,48 @@
+schema_version: '1.0'
+name: 06-sibling-steals-trigger
+description: 'Fixture: a skill whose description only speaks internal jargon, and a broader sibling that claims its requests.'
+tags:
+- skill-builder
+- fire
+- debug
+- hard
+runs: 3
+context:
+  scaffold_script: setup.sh
+execution:
+  prompt: |
+    When I say "prep the quarterly business review for Acme" Claude builds a generic deck instead of using our qbr-prep skill in skills/qbr-prep/. The skill itself is fine when I force it. Why doesn't it get picked?
+  max_turns: 10
+  timeout_seconds: 300
+  allowed_tools:
+  - Read
+  - Glob
+  - Grep
+  - Edit
+  - Write
+  - Skill
+graders:
+- type: tool_used
+  name: trigger-fired
+  tool: Skill
+  input_match: skill-builder
+- type: llm
+  name: jargon-not-user-words
+  criteria: |
+    Pass if the reply identifies that qbr-prep's description is written in internal jargon (QBR-v3, Halcyon, pipeline) and implementation detail, and contains none of the words the person actually uses, such as "quarterly business review", "QBR for <account>" or "renewal".
+  weight: 1
+- type: llm
+  name: sibling-claims-request
+  criteria: |
+    Pass if the reply identifies that the deck-builder skill's description explicitly claims "quarterly review or business review deck" and "client presentation", so it is the better match for that request and wins.
+  weight: 1
+- type: llm
+  name: fixes-both-sides
+  criteria: |
+    Pass if the reply's fix (proposed or made) changes both skills: qbr-prep's description gains the person's phrasings, and deck-builder gets a "not for" clause (or loses the QBR phrases) that points quarterly business reviews to qbr-prep.
+  weight: 1
+- type: llm
+  name: retest-with-near-miss
+  criteria: |
+    Pass if the reply says to re-test in a fresh session with the exact failing phrase and with a prompt that should still go to deck-builder (for example a generic pitch deck), so the fix is shown not to steal deck-builder's requests.
+  weight: 1

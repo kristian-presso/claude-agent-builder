@@ -1,0 +1,12 @@
+$ curl -si https://mcp.example.com/mcp -H 'Content-Type: application/json' \
+    -H 'Accept: application/json, text/event-stream' \
+    -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
+HTTP/1.1 421 Misdirected Request
+Invalid Host header
+
+# then I set enable_dns_rebinding_protection=False to rule it out and tried a quicker test:
+$ curl -si https://mcp.example.com/mcp -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
+HTTP/1.1 400 Bad Request
+Invalid Content-Type header
+
+# so turning protection off didn't fix it either. Put it back on.

@@ -48,6 +48,14 @@ holdout has been fitted to the prompts, not improved.
 For multi-step jobs, keep a second, smaller set scored on whether the outcome was right,
 plus calls taken and errors.
 
+## Before a redesign, score what exists
+
+When reshaping an existing server (merging thin tools into outcome-shaped ones, renaming,
+removing), run the same set against the current surface first and keep the result as the
+baseline: right first tool, calls per task, errors, and any harmful sequence such as delete
+followed by create. The redesign ships when it beats that baseline on the holdout, not when
+it looks cleaner.
+
 ## Do not
 
 - Write the eval after the description. It will test what you wrote.

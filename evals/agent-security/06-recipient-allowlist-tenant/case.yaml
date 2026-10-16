@@ -1,0 +1,43 @@
+schema_version: '1.0'
+name: 06-recipient-allowlist-tenant
+tags:
+- agent-security
+- fire
+- design
+- hard
+runs: 3
+execution:
+  prompt: |
+    Follow-up on our support agent (B2B SaaS, about 400 customer companies). It reads incoming support tickets, can query our CRM and billing system, and emails replies. Last review said it had the lethal trifecta, so we fixed the exfiltration leg: the send_email tool now only accepts recipients who are contacts on the ticket's own customer account, enforced in code, not in the prompt. That closes it, right?
+  max_turns: 5
+  timeout_seconds: 180
+  allowed_tools:
+  - Read
+  - Glob
+  - Grep
+  - Skill
+graders:
+- type: tool_used
+  name: trigger-fired
+  tool: Skill
+  input_match: agent-security
+- type: llm
+  name: attacker-is-the-recipient
+  criteria: |
+    Pass if the reply points out that the person filing the ticket can be the attacker (any customer, or anyone who gets a contact address added to an account), so a recipient allowlist scoped to the ticket's account still delivers whatever the agent puts in the reply straight to them.
+  weight: 1
+- type: llm
+  name: cross-tenant-data
+  criteria: |
+    Pass if the reply identifies that the remaining leak is other customers' data: while handling one customer's ticket the agent can query the CRM and billing for any of the 400 companies, so an injected ticket can pull another company's records into a reply to the attacker.
+  weight: 1
+- type: llm
+  name: bind-reads-to-ticket-tenant
+  criteria: |
+    Pass if the reply's main fix scopes the agent's CRM and billing reads to the ticket's own customer account, enforced outside the model (a per-ticket scoped credential, a tenant filter in the tool code, or row-level security), so the private-data leg matches the exfiltration allowlist.
+  weight: 1
+- type: llm
+  name: sender-identity
+  criteria: |
+    Pass if the reply notes that the ticket's claimed sender or account is itself attacker-controllable (spoofed From address, a free-text "I am from company X", or a contact added through self-service), so the tenant used for scoping must come from a verified source, not from the ticket text.
+  weight: 1

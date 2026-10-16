@@ -7,6 +7,7 @@
 - Titles and annotations (the three classes)
 - Structured output is inferred from your return annotation
 - Schemas: make the refusal impossible
+- From endpoints to outcomes
 
 A tool is not an API endpoint with a different envelope. Its caller is a model choosing
 between thirty of them from their metadata alone, so the metadata is the product.
@@ -123,3 +124,38 @@ wrong. Prefer a schema that cannot express the invalid state:
 Give every parameter a description and an example. Where a value cannot be validated by the
 schema (a path, an id from another system), validate it in the body and refuse in the shape
 [errors-and-refusals.md](errors-and-refusals.md) describes.
+
+## From endpoints to outcomes
+
+A server generated from an OpenAPI spec, one tool per endpoint, is the most common shape
+and usually the worst one. The model has to orchestrate your backend from metadata alone:
+find the customer, list their bookings, fetch one, list slots, then update. Each hop is a
+chance to pick the wrong sibling (`update_availability_slot` for `update_appointment`), and
+any multi-step change can be done half right (delete and recreate, losing the deposit and
+history that a move would have kept).
+
+Redesign from the requests, not the routes:
+
+1. **List the jobs people actually ask for**, from transcripts if you have them. Each
+   common job should be one call. Rare admin operations can stay out of the model's reach
+   entirely.
+2. **Make each state change atomic and server-side.** "Move my appointment" is
+   `reschedule_appointment`, which moves the existing record and keeps what hangs off it.
+   Do not leave the model to compose it from delete and create.
+3. **Accept the identifiers people use.** A practitioner's or service's name, a date, the
+   signed-in customer, "my Thursday appointment". Resolve them to internal ids inside the
+   server. When a match is ambiguous, refuse and return the candidates, so the model asks
+   the person which one rather than guessing. Ids the model must fetch first are calls the
+   person waits for and chances to pass the wrong one.
+4. **No generic payloads.** `fields: dict` lets the model invent field names and change
+   anything. Give each tool typed, described parameters, with enums where the set is
+   closed.
+5. **Keep the classes honest.** Consolidating is not merging: reads, writes and destructive
+   actions stay separate tools (`cancel_appointment` is its own destructive tool, never a
+   mode of `manage_appointment`).
+6. **Measure it.** Score the current surface on a routing set built from the same requests
+   before changing anything (right first tool, calls per task, errors), then score the new
+   one. See [routing-evals.md](routing-evals.md).
+
+Ten or fewer well-shaped tools usually beat forty thin ones. The test is not the count but
+whether each common request maps to one obvious tool.

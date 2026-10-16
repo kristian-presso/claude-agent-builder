@@ -24,6 +24,33 @@ Last researched August 2026; incident details re-checked 16/10/2026.
   name, which general supply-chain security already has words for. Sources:
   postmarkapp.com/blog and snyk.io/blog, September 2025.
 
+## Secrets leaking into tool results
+
+A server's error path is usually its least reviewed code, and its output goes straight into
+the model's context. Common leaks:
+
+- **An exception's text.** An HTTP client's error often includes the request URL, so a key
+  passed in a query string comes back in `str(exc)`. Keep keys out of URLs (headers, or a
+  proxy that injects them) because URLs are also written to access and proxy logs.
+- **Tracebacks and debug fields** returned "so the model can retry sensibly", which can
+  include request headers and with them a bearer token.
+- **Raw upstream errors** forwarded as they came.
+
+Return a fixed, actionable message to the model and log the detail server-side, redacted.
+Do not try to scrub secrets out of exception text after the fact; you will miss a format.
+Once a secret is in the context, an agent that also reads untrusted content can be told to
+send it anywhere it can reach, and it also lands in transcripts and logs.
+
+## Token passthrough
+
+A server that forwards the caller's bearer token to a different API (a "confused deputy")
+lets any token the client holds act on systems it was never issued for, and removes the
+downstream service's ability to tell the server and the user apart. The MCP authorization
+specification's security guidance forbids it: a server accepts only tokens issued for
+itself, and calls downstream with its own credential, scoped to what the tool needs (or a
+token obtained by an explicit exchange). Checked 16/10/2026; re-check the current
+authorization section at modelcontextprotocol.io before citing it.
+
 ## No protocol-level detection
 
 As of the sources reviewed, MCP has no built-in mechanism to detect tool poisoning and no

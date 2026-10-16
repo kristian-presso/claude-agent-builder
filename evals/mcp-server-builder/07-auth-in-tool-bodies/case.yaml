@@ -1,0 +1,51 @@
+schema_version: '1.0'
+name: 07-auth-in-tool-bodies
+description: 'Fixture: an HTTP MCP server that does authentication and authorisation ad hoc inside each tool body.'
+tags:
+- mcp-server-builder
+- fire
+- audit
+- hard
+runs: 3
+context:
+  scaffold_script: setup.sh
+execution:
+  prompt: |
+    Review the auth in server.py. It's live for our team and people sign in fine through Claude, so I think it's OK, but I want a second opinion before we open it to other customers. Don't edit, just tell me what to change.
+  max_turns: 10
+  timeout_seconds: 300
+  allowed_tools:
+  - Read
+  - Glob
+  - Grep
+  - Skill
+graders:
+- type: tool_used
+  name: trigger-fired
+  tool: Skill
+  input_match: mcp-server-builder
+- type: llm
+  name: unverified-signature
+  criteria: |
+    Pass if the reply identifies that the JWT is decoded with signature verification turned off, so anyone can forge a token with any team or role (including role admin) and the server will believe it.
+  weight: 1
+- type: llm
+  name: missing-gate-on-export
+  criteria: |
+    Pass if the reply identifies that export_all_pages has no auth check at all, and attributes it to checks living in each tool body (one forgotten call site is a hole), recommending one shared gate every tool must call, enforced by a test.
+  weight: 1
+- type: llm
+  name: verify-at-http-boundary
+  criteria: |
+    Pass if the reply recommends verifying the token once at the HTTP layer (middleware or the SDK's token verifier) before any tool runs, checking signature against the IdP's keys, issuer, expiry and audience, and rejecting the request there.
+  weight: 1
+- type: llm
+  name: audience-check
+  criteria: |
+    Pass if the reply specifically calls out validating the audience (aud) so that a token the same IdP issued for a different API or app cannot be replayed against this server.
+  weight: 1
+- type: llm
+  name: http-401-challenge
+  criteria: |
+    Pass if the reply says an unauthenticated request should get an HTTP 401 with a WWW-Authenticate header pointing at the server's protected resource metadata (so clients can start sign-in), rather than a tool result such as an empty list or {"error": "login required"}.
+  weight: 1

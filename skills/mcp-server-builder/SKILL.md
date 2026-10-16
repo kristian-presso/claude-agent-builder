@@ -1,6 +1,6 @@
 ---
 name: mcp-server-builder
-description: Builds a Model Context Protocol (MCP) server from idea to shippable, or audits or debugs an existing one against the same bar. Covers choosing tools, resources and prompts, writing tool names, descriptions and annotations a model can route on, transports, reverse proxies and stateless deployment, fail-closed auth, refusal wording, three levels of tests, and directory submission. Use when someone says "build an MCP server", "spec the tools for my MCP", "add a tool to my MCP", "is this MCP ready to ship", "audit my MCP server", "why does my MCP return 421", "my MCP server works locally but not behind the proxy", or before listing a server in the Claude or ChatGPT directory.
+description: Builds a Model Context Protocol (MCP) server from idea to shippable, or audits, redesigns or debugs an existing one against the same bar. Covers outcome-shaped tools instead of one tool per API endpoint, tool names, descriptions and annotations a model can route on, transports, reverse proxies and multi-instance stateless deployment, token verification and fail-closed auth at the boundary, refusal wording, three levels of tests, and directory submission. Use when someone says "build an MCP server", "spec the tools for my MCP", "add a tool to my MCP", "my MCP has too many tools", "Claude picks the wrong tool", "review the auth on my MCP", "is this MCP ready to ship", "audit my MCP server", "why does my MCP return 421", "it works locally but fails in production", intermittent "not found" or lost state once it runs on several instances, or when reviewing or debugging code built on an MCP SDK (FastMCP, MCPServer, @modelcontextprotocol/sdk), or before listing a server in the Claude or ChatGPT directory.
 ---
 
 # MCP server builder
@@ -19,7 +19,9 @@ code.
   Later stages built on a failed one waste the work.
 - **Audit** - an existing server. Run each stage's exit test without changing anything and
   report `pass`, `fail`, `missing` or `unmeasured` per stage, with evidence. Unmeasured is
-  not a pass.
+  not a pass. For auth, list every registered tool and mark whether it goes through the
+  shared gate: the one that does not (often a backup or export tool added later) is the
+  finding that matters most.
 
 ## The stages
 
@@ -64,6 +66,14 @@ The rules that matter most:
   destructive as a whole.
 - **Refuse guessed values.** Where a wrong value reaches a person (a price, a date, an
   address), require it and refuse without it.
+- **Shape tools around outcomes, not endpoints.** Start from what people actually ask, not
+  from the API. A server generated one tool per REST endpoint makes the model orchestrate
+  your backend: many calls per job, sibling tools it confuses, and multi-step changes it can
+  get half right (delete then recreate instead of move). Aim for one call per common job,
+  done atomically server-side; take the identifiers people say (a name, an email, "my
+  Thursday appointment") and resolve them inside the server, refusing with candidates when
+  ambiguous; replace generic `fields: dict` parameters with typed, described ones. See
+  "From endpoints to outcomes" in [references/tool-design.md](references/tool-design.md).
 
 Exit test: a written tool list where every tool has all six fields.
 
@@ -75,7 +85,9 @@ policy?" must not call the refund tool). Keep a holdout split. Store it in the r
 example `evals/golden-prompts.jsonl`.
 
 Written now it tests what people will ask. Written after the descriptions it tests what you
-wrote. Method and scoring in [references/routing-evals.md](references/routing-evals.md).
+wrote. When redesigning an existing server, score the current tool surface on the same set
+first (right first tool, calls per task, errors): the redesign has to beat a number, not a
+feeling. Method and scoring in [references/routing-evals.md](references/routing-evals.md).
 
 Exit test: the file exists with negatives for every tool.
 
@@ -90,6 +102,11 @@ Before choosing HTTP over stdio, read [references/transports.md](references/tran
 Before putting it behind a proxy, read [references/deployment.md](references/deployment.md):
 the Host allowlist is the single most common reason a working server answers 421 to
 everything.
+
+Before running more than one instance, read the stateless section of
+[references/transports.md](references/transports.md): anything kept in process memory
+between two calls (a pending draft, a confirmation) works locally and fails at random in
+production.
 
 Auth and refusals: [references/auth-at-the-boundary.md](references/auth-at-the-boundary.md),
 [references/errors-and-refusals.md](references/errors-and-refusals.md) and
@@ -139,6 +156,9 @@ passing. In build mode, also the branch or pull request that carries the server.
   and record the pin. See [references/sdk-versions.md](references/sdk-versions.md).
 - Gate every tool at call time. Hiding a tool from `tools/list` is curation, not a
   permission.
+- Verify the token at the HTTP boundary (signature, issuer, audience, expiry) before any
+  tool runs, answer an unauthenticated request with a `401` challenge rather than a tool
+  result, and never forward the caller's token to another API.
 - Every refusal says what went wrong and what to do next, in one wording per condition.
 - Never let a blocked tool return a plausible empty answer. Refuse and name the
   prerequisite.

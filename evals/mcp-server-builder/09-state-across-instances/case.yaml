@@ -1,0 +1,46 @@
+schema_version: '1.0'
+name: 09-state-across-instances
+description: 'Fixture: a two-step confirm flow that keeps drafts in a module-level dict on a multi-instance stateless deployment.'
+tags:
+- mcp-server-builder
+- fire
+- debug
+- hard
+runs: 3
+context:
+  scaffold_script: setup.sh
+execution:
+  prompt: |
+    In production about a third of confirm_invoice calls come back "Draft not found", even when the user confirms seconds after the draft. Locally it never happens. Code is in server.py. What's going on and what's the right fix?
+  max_turns: 8
+  timeout_seconds: 240
+  allowed_tools:
+  - Read
+  - Glob
+  - Grep
+  - Skill
+graders:
+- type: tool_used
+  name: trigger-fired
+  tool: Skill
+  input_match: mcp-server-builder
+- type: llm
+  name: module-dict-across-instances
+  criteria: |
+    Pass if the reply identifies that PENDING is in-process memory and that with several Cloud Run instances (and restarts or scale-down) a stateless confirm request often lands on a different instance from the draft, so the draft is not there.
+  weight: 1
+- type: llm
+  name: external-store-or-self-contained
+  criteria: |
+    Pass if the recommended fix moves the draft out of process memory: a shared store with an expiry (database, Redis, Firestore) keyed by draft_id, or the billing system's own draft object, or a signed self-contained token carrying the draft, rather than relying on sticky sessions or pinning to one instance as the main fix.
+  weight: 1
+- type: llm
+  name: confirm-binds-to-preview
+  criteria: |
+    Pass if the reply makes sure confirm sends exactly what the user saw: the stored or signed draft is immutable and bound to the caller (and ideally its total), so a confirm cannot send a different or someone else's draft.
+  weight: 1
+- type: llm
+  name: refusal-wording
+  criteria: |
+    Pass if the reply improves the "Draft not found" result into a refusal that says what to do next (for example the draft expired or is unknown, call draft_invoice again and show the new preview) and distinguishes it from a server failure, so the model does not retry blindly or report success.
+  weight: 1

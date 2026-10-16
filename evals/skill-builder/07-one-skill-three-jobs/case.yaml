@@ -1,0 +1,48 @@
+schema_version: '1.0'
+name: 07-one-skill-three-jobs
+description: 'Fixture: one skill that does three unrelated jobs with a catch-all description, one of which sends email unprompted.'
+tags:
+- skill-builder
+- fire
+- fix
+- hard
+runs: 3
+context:
+  scaffold_script: setup.sh
+execution:
+  prompt: |
+    skills/finance-ops/ keeps firing when it shouldn't. Yesterday I asked Claude to check a supplier's invoice for a typo and it started emailing overdue reminders to my customers. Can you tidy the skill up so that stops?
+  max_turns: 20
+  timeout_seconds: 480
+  allowed_tools:
+  - Read
+  - Glob
+  - Grep
+  - Edit
+  - Write
+  - Skill
+graders:
+- type: tool_used
+  name: trigger-fired
+  tool: Skill
+  input_match: skill-builder
+- type: llm
+  name: split-into-separate-skills
+  criteria: |
+    Pass if the reply splits finance-ops (or recommends splitting it) into separate skills, one per job (at least invoice chasing separate from the VAT return and expense categorisation), each with its own folder and description, rather than only rewording the one description or moving sections into references.
+  weight: 1
+- type: llm
+  name: chaser-description-excludes-bills
+  criteria: |
+    Pass if the invoice-chasing skill's new description is scoped to the person's own unpaid customer invoices (receivables) and says it is not for checking or paying invoices or bills received from suppliers, which is the exact request that misfired.
+  weight: 1
+- type: llm
+  name: send-needs-approval
+  criteria: |
+    Pass if the reply changes the chasing step so reminders are drafted and shown to the person for approval before anything is sent, instead of being sent automatically.
+  weight: 1
+- type: llm
+  name: rotting-fact-moved
+  criteria: |
+    Pass if the reply notices the dated fact in the body (statutory late-payment interest "currently 8 per cent over base") and moves it to a reference with an "as of" date and where to verify it, or otherwise flags it as a fact that will go stale.
+  weight: 1

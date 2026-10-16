@@ -92,5 +92,22 @@ docker run \
   "credentials protected".
 - **Side doors.** Write access to `PATH` directories, shell start-up files or config
   directories lets a sandboxed process plant something a less-isolated process later runs.
-- **Narrow scope.** Isolation often wraps only the shell tool. File-edit tools, browser or
-  desktop control may be governed by the permission system alone.
+- **Narrow scope.** Isolation often wraps only the shell tool. File-edit tools, a built-in
+  web fetch, browser or desktop control may be governed by the permission system alone, so
+  a fetch tool can reach hosts the shell allowlist would block. Deny or restrict those tools
+  in the permissions as well.
+- **Allowed hosts that accept writes.** An allowlist bounds where traffic goes, not what it
+  does. A code host or package registry on the list is a place to upload to, and with a
+  publish token in reach it is a supply-chain attack, not just a leak.
+- **Secrets in the environment.** In CI, secrets set at job level are in the environment of
+  every step, including the one running the agent. Put them only in the steps that need
+  them, in a separate job where possible, and never in the agent's step.
+- **Injection before the model runs.** In a CI workflow, interpolating event fields
+  (`${{ github.event.issue.title }}`, a PR body, a branch name) directly into a `run:`
+  script is a shell injection in the runner, no prompt injection needed. Pass them through
+  environment variables or a file and quote them, as GitHub's own security hardening guide
+  for Actions says.
+- **Outputs as a channel.** An agent driven by public input whose results are public (issue
+  comments, pull requests, commit messages on a public repository) can exfiltrate with no
+  network at all. Merge only after human review, and never let an agent change its own
+  workflow files.

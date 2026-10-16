@@ -89,3 +89,10 @@ A skill may be shared, zipped or published. Before that:
 - no absolute paths from one machine.
 
 Put anything that varies in a short **Configuration** section and have the skill ask for it.
+A credential is always something that varies: the skill names it (an environment variable,
+a connector) and never holds it. Placeholders go on reserved names such as `example.com`
+or `*.example`, which can never belong to a real person.
+
+If a credential is found in a skill that has already been saved, synced or committed,
+removing it is not enough: revoke or roll it at the provider first, because copies of the
+old file may exist anywhere it went.

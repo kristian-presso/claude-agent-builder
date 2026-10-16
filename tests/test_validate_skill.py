@@ -230,6 +230,34 @@ class TestCheckBroken(SkillDirCase):
         self.assertEqual(code, 1)
         self.assertIn("looks like it contains a secret", out)
 
+    def test_stripe_style_key_in_reference_detected(self):
+        # Assembled from pieces so no complete key-shaped string is committed.
+        fake = "rk_" + "live_" + "51AbCdEfGhIjKlMnOpQrStUv"
+        folder = self.make({"SKILL.md": skill_md(), "references/api.md": f"KEY={fake}\n"})
+        code, out = self.run_check(folder)
+        self.assertEqual(code, 1)
+        self.assertIn("references/api.md: looks like it contains a secret", out)
+
+    def test_credential_assignment_warns(self):
+        folder = self.make({"SKILL.md": skill_md(), "references/api.md": "api_key = 'abcd1234efgh5678ijkl9012'\n"})
+        code, out = self.run_check(folder)
+        self.assertEqual(code, 0)
+        self.assertIn("credential-looking assignment", out)
+
+    def test_real_email_warns_example_domain_does_not(self):
+        folder = self.make({"SKILL.md": skill_md(body="Ask jane.doe@gmail.com or ops@acme.example or a@example.com.\n")})
+        code, out = self.run_check(folder)
+        self.assertEqual(code, 0)
+        self.assertIn("jane.doe@gmail.com", out)
+        self.assertNotIn("ops@acme.example", out)
+        self.assertNotIn("a@example.com", out)
+
+    def test_use_whenever_counts_as_use_when(self):
+        desc = "Builds weekly summaries. Use whenever someone asks for the weekly summary."
+        code, out = self.run_check(self.make({"SKILL.md": skill_md(description=desc)}))
+        self.assertEqual(code, 0)
+        self.assertNotIn("does not seem to say when", out)
+
     def test_check_text_is_case_insensitive(self):
         folder = self.make({"SKILL.md": skill_md(body="Built for Example Client Ltd.\n")})
         code, out = self.run_check(folder, ["example client"])

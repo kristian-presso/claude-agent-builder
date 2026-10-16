@@ -1,0 +1,43 @@
+schema_version: '1.0'
+name: 07-two-legs-proportionate
+tags:
+- agent-security
+- fire
+- design
+- hard
+runs: 3
+execution:
+  prompt: |
+    Small one. We have an agent that reads competitors' public blog posts and changelogs every night and writes a summary as a draft post in our WordPress, using an application password that can only create drafts. A person edits and publishes the drafts. It has no access to anything else: no email, no internal docs, no customer data. Our security person wants it in a microVM with full egress filtering and a prompt-injection classifier before we turn it on. Is that proportionate?
+  max_turns: 5
+  timeout_seconds: 180
+  allowed_tools:
+  - Read
+  - Glob
+  - Grep
+  - Skill
+graders:
+- type: tool_used
+  name: trigger-fired
+  tool: Skill
+  input_match: agent-security
+- type: llm
+  name: no-private-data-leg
+  criteria: |
+    Pass if the reply concludes that with no private data in reach the design does not have the lethal trifecta, so data exfiltration is not the risk to design against, and the heavy controls requested mostly defend against that missing leg.
+  weight: 1
+- type: llm
+  name: real-risk-is-content
+  criteria: |
+    Pass if the reply names the risk that does remain: injected content in the drafts (planted links, false claims, hidden text or SEO spam, defamatory statements about a competitor) reaching the public site, and says the human edit before publishing is the control that matters, which should include checking links and claims rather than proofreading only.
+  weight: 1
+- type: llm
+  name: credential-is-the-private-asset
+  criteria: |
+    Pass if the reply checks the one credential the agent holds: the WordPress application password must really be limited to creating drafts (an application password inherits its user's role, so the user should be a Contributor or a custom role that cannot publish, upload or edit others' posts), because if it can publish, the human gate is gone.
+  weight: 1
+- type: llm
+  name: proportionate-verdict
+  criteria: |
+    Pass if the reply gives a clear proportionate verdict: the microVM and classifier are not needed for this design as described, with conditions (a draft-only credential, the human review, and re-running the review if anything with private data is ever added).
+  weight: 1
