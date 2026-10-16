@@ -1,0 +1,23 @@
+{
+  "name": "agent-builder",
+  "version": "0.1.0",
+  "description": "For people building with Claude: MCP servers and MCP Apps that ship and get listed, agent security that removes risk rather than describing it, a loop for shipping real work with coding agents, and turning a manual process into a skill.",
+  "author": {
+    "name": "Kristian Papadakis",
+    "url": "https://kristianpapadakis.com"
+  },
+  "homepage": "https://github.com/kristian-presso/claude-skills",
+  "license": "MIT",
+  "keywords": [
+    "mcp",
+    "mcp-server",
+    "mcp-apps",
+    "agent-security",
+    "prompt-injection",
+    "coding-agents",
+    "claude-code",
+    "verification",
+    "skills",
+    "skill-authoring"
+  ]
+}
