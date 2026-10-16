@@ -1,0 +1,38 @@
+schema_version: '1.0'
+name: 02-directory-error-rate
+tags:
+- mcp-operations
+- fire
+runs: 3
+execution:
+  prompt: |
+    My connector in the Claude directory shows "Error rate (30d): 9%" on the dashboard but the health badge still says Healthy, and my own logs show almost no 5xx errors. Which number do I trust and what should I do?
+  max_turns: 12
+  timeout_seconds: 360
+  allowed_tools:
+  - Read
+  - Glob
+  - Grep
+  - Skill
+  - Bash
+graders:
+- type: tool_used
+  name: trigger-fired
+  tool: Skill
+  input_match: mcp-operations
+  weight: 1
+- type: llm
+  name: iserror-counted
+  criteria: |
+    Pass if this is true of the reply: It explains that the dashboard's error-rate figure counts tool results returned with isError: true (correct refusals) as errors.
+  weight: 1
+- type: llm
+  name: badge-excludes
+  criteria: |
+    Pass if this is true of the reply: It explains that the health badge counts only request-level errors and excludes errors a tool returns in its own result, which is why the badge can stay Healthy.
+  weight: 1
+- type: llm
+  name: fix-descriptions
+  criteria: |
+    Pass if this is true of the reply: It recommends breaking refusals down by tool (and reason) and fixing tool descriptions that invite calls at the wrong moment, checked with a routing eval, rather than treating it as a server outage.
+  weight: 1

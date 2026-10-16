@@ -9,13 +9,14 @@
 
 One department of [claude-skills](https://github.com/kristian-presso/claude-skills), where all departments live in one place. Free, MIT licensed, no sign-up.
 
-Five skills for people building things with Claude: MCP servers and the apps that sit on them, agents that are safe to give real access to, shipping multi-step work with coding agents, and turning a process you do by hand into a skill. They share one conviction: **the expensive failure is not code that breaks; it is work that reports success and is wrong.** Each skill is built around the check that catches its version of that.
+Six skills for people building things with Claude: MCP servers, the apps that sit on them and running them once they are live, agents that are safe to give real access to, shipping multi-step work with coding agents, and turning a process you do by hand into a skill. They share one conviction: **the expensive failure is not code that breaks; it is work that reports success and is wrong.** Each skill is built around the check that catches its version of that.
 
 ## Skills
 
 | Skill | Use it when |
 | --- | --- |
 | [mcp-server-builder](skills/mcp-server-builder/SKILL.md) | Building or auditing an MCP server: outcome-shaped tools, auth at the boundary, tests, deployment and directory listing. Includes a tested Python starter. |
+| [mcp-operations](skills/mcp-operations/SKILL.md) | Your MCP server is live and you want to know what to record on every call, why the directory says your error rate is high, which tools are failing people, how to rename or retire a tool safely, or how to run a weekly improvement pass. Includes tested SQL. |
 | [mcp-app-builder](skills/mcp-app-builder/SKILL.md) | Building an MCP App (interactive UI inside the chat) and proving it works before you ship it. |
 | [agent-security](skills/agent-security/SKILL.md) | Giving an agent a new tool, credentials or untrusted input. Checks for the lethal trifecta and removes a leg rather than adding warnings. |
 | [ship-with-agents](skills/ship-with-agents/SKILL.md) | Running real work through coding agents: discuss, plan, execute, verify blind, ship. |
@@ -27,13 +28,14 @@ Every skill is evaluated with Claude Code's built-in `claude plugin eval`: each 
 
 | Skill | Cases | Score with | Without | Gain | Before, 16/10/2026 (5 cases): with / without / gain |
 | --- | --- | --- | --- | --- | --- |
-| mcp-server-builder | 9 | 0.90 | 0.76 | +0.14 | 0.95 / 0.86 / +0.09 |
+| mcp-server-builder | 9 | 0.87 | 0.76 | +0.11 | 0.95 / 0.86 / +0.09 |
+| mcp-operations | 5 | 1.00 | 0.65 | +0.35 | new in 0.3.0 |
 | mcp-app-builder | 5 | 0.96 | 0.71 | +0.25 | unchanged |
 | agent-security | 9 | 0.99 | 0.88 | +0.11 | 1.00 / 0.96 / +0.04 |
 | ship-with-agents | 5 | 0.93 | 0.64 | +0.29 | unchanged |
 | skill-builder | 8 | 0.93 | 0.69 | +0.24 | 0.93 / 0.86 / +0.07 |
 
-New results from 16/10/2026, version 0.2.0. On the same nine, nine and eight cases, the 0.1.0 skills scored 0.82 / 0.76 (mcp-server-builder), 0.91 / 0.88 (agent-security) and 0.89 / 0.74 (skill-builder), so the gains above come from the skills improving, not only from harder cases. The scores on the original five cases are kept for comparison.
+New results from 16/10/2026. On the same nine, nine and eight cases, the 0.1.0 skills scored 0.82 / 0.76 (mcp-server-builder), 0.91 / 0.88 (agent-security) and 0.89 / 0.74 (skill-builder), so the gains come from the skills improving, not only from harder cases. The scores on the original five cases are kept for comparison. mcp-server-builder scored 0.90 / 0.76 in 0.2.0 and 0.87 / 0.76 once mcp-operations sat beside it in 0.3.0; the difference is runs where neither skill was invoked, within the run-to-run spread seen across rounds. mcp-operations fired on all 9 runs it should have and on none of the 6 near-misses.
 
 ## Install
 
@@ -71,6 +73,9 @@ Both starters were written out from their reference files exactly as published a
 - **mcp-app-builder**: the Worker project installs, builds its view, typechecks and bundles,
   and under a local dev server answers `tools/list`, `tools/call` and `resources/read` as the
   verification tiers require.
+- **mcp-operations**: every SQL block in its event contract and signal references runs
+  against seeded data in a real PostgreSQL 16, locally and in CI, and the signal queries
+  return the findings the seed was built to produce.
 - **skill-builder**: the validator script needs only Python 3 and was run against every
   skill in this plugin and against deliberately broken ones.
 
