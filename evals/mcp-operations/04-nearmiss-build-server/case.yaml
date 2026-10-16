@@ -1,0 +1,32 @@
+schema_version: '1.0'
+name: 04-nearmiss-build-server
+tags:
+- mcp-operations
+- near-miss
+- agent-builder
+runs: 3
+execution:
+  prompt: |
+    I want to build a brand new MCP server that lets Claude book appointments in my salon's calendar. Spec the tools for me: names, descriptions and annotations.
+  max_turns: 12
+  timeout_seconds: 360
+  allowed_tools:
+  - Read
+  - Glob
+  - Grep
+  - Skill
+  - Bash
+graders:
+- type: tool_used
+  name: trigger-not-fired
+  tool: Skill
+  input_match: mcp-operations
+  min: 0
+  max: 0
+  arm: both
+  weight: 1
+- type: llm
+  name: does-the-task
+  criteria: |
+    Pass if this is true of the reply: It proposes a concrete tool list for booking (for example listing availability, creating a booking and cancelling), with separate read and write tools and annotations such as read-only or destructive hints.
+  weight: 1

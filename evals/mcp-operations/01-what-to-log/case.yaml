@@ -1,0 +1,43 @@
+schema_version: '1.0'
+name: 01-what-to-log
+tags:
+- mcp-operations
+- fire
+runs: 3
+execution:
+  prompt: |
+    I've shipped a remote MCP server (TypeScript, about 12 tools) and it's getting real users. I want to know which tools work and where people get stuck. What exactly should I record on each tool call, and what should I definitely not record?
+  max_turns: 12
+  timeout_seconds: 360
+  allowed_tools:
+  - Read
+  - Glob
+  - Grep
+  - Skill
+  - Bash
+graders:
+- type: tool_used
+  name: trigger-fired
+  tool: Skill
+  input_match: mcp-operations
+  weight: 1
+- type: llm
+  name: refused-vs-error
+  criteria: |
+    Pass if this is true of the reply: It says refusals (a tool correctly saying no) must be recorded separately from server errors, not merged into one failure count.
+  weight: 1
+- type: llm
+  name: empty-outcome
+  criteria: |
+    Pass if this is true of the reply: It recommends recording when a search or list tool found nothing (an 'empty' outcome or zero-hit query) as distinct from a successful result.
+  weight: 1
+- type: llm
+  name: no-values
+  criteria: |
+    Pass if this is true of the reply: It says not to record argument values or tool results (personal data), only shapes such as tool name, argument names, sizes and timings.
+  weight: 1
+- type: llm
+  name: no-session-id
+  criteria: |
+    Pass if this is true of the reply: It warns that the current MCP protocol revision has no protocol sessions / Mcp-Session-Id, so calls should not be grouped by a session id (and suggests trace id or account plus inactivity gap instead).
+  weight: 1

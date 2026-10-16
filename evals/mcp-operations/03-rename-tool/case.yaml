@@ -1,0 +1,38 @@
+schema_version: '1.0'
+name: 03-rename-tool
+tags:
+- mcp-operations
+- fire
+runs: 3
+execution:
+  prompt: |
+    One of my live MCP server's tools is called `getData` and I want to rename it to `list_orders` and make its `customer_id` parameter required. Can I just ship that in tomorrow's deploy?
+  max_turns: 12
+  timeout_seconds: 360
+  allowed_tools:
+  - Read
+  - Glob
+  - Grep
+  - Skill
+  - Bash
+graders:
+- type: tool_used
+  name: trigger-fired
+  tool: Skill
+  input_match: mcp-operations
+  weight: 1
+- type: llm
+  name: not-one-step
+  criteria: |
+    Pass if this is true of the reply: It says not to rename in one step: add the new tool alongside, mark the old one deprecated but working, and remove it only after usage of the old name has stopped (for example two weeks with no calls).
+  weight: 1
+- type: llm
+  name: required-param-breaking
+  criteria: |
+    Pass if this is true of the reply: It says making a parameter required is a breaking change that should be handled like a rename or with a window that accepts both shapes.
+  weight: 1
+- type: llm
+  name: separate-releases
+  criteria: |
+    Pass if this is true of the reply: It advises shipping the change in its own release with a version bump / changelog so its effect can be measured, rather than batching it with other changes.
+  weight: 1
