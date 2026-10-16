@@ -1,6 +1,6 @@
 ---
 name: agent-security
-description: Reviews the security of an AI agent or agentic workflow using the lethal trifecta model (private data, untrusted content, a way to send data out), then checks prompt injection exposure, MCP and tool-server risks, credential handling, sandboxing and network egress, and returns findings with the one change that removes the most risk. Use when designing or reviewing an agent, adding a tool or MCP server to one, giving an agent credentials or API keys, letting it browse or read email, running it unattended, or when someone asks "is this agent safe", "can this be prompt injected", or "how should the agent hold this key".
+description: Reviews the security of an AI agent or agentic workflow using the lethal trifecta model (private data, untrusted content, a way to send data out), then checks prompt injection exposure, MCP and tool-server risks, credential handling, sandboxing and network egress, and returns findings with the one change that removes the most risk. Use when designing or reviewing an agent, adding a tool or MCP server to one, giving an agent or coding agent credentials, API keys, secrets or a .env file, letting it browse or read email, running it unattended, or when someone asks "is this agent safe", "can this be prompt injected", "should the agent see this key", "can I put the live key in .env for the agent", or "how should the agent hold this key".
 ---
 
 # Agent security

@@ -7,7 +7,7 @@ tags:
 runs: 3
 execution:
   prompt: |
-    Every Monday I pull last week's sales CSV, compare it to the week before, and write three bullets for the team, flagging anything that moved more than 10%. Make that a skill for Claude Code. Save it in skills/ in this project (it ships in our plugin).
+    Every Monday I pull last week's sales CSV, compare it to the week before, and write three bullets for the team, flagging anything that moved more than 10%. Make that a skill for Claude Code. Save it as skills/weekly-sales-summary/ in this project (it ships in our plugin), and put your test prompts in skills/weekly-sales-summary/evals.md.
   max_turns: 20
   timeout_seconds: 480
   allowed_tools:
@@ -24,16 +24,45 @@ graders:
   input_match: skill-builder
 - type: file_exists
   name: skill-file-written
-  path: skills/*/SKILL.md
+  path: skills/weekly-sales-summary/SKILL.md
   weight: 0.5
 - type: llm
-  name: description-and-evals
+  name: skill-md-1
   criteria: |
-    Judge the whole run (trace). Pass only if at least FOUR of these FIVE hold:
-    1. The SKILL.md frontmatter has a name in lowercase-hyphen form matching its folder, and a third-person description that says what it does and "Use when ..." with concrete trigger phrases such as "weekly sales summary".
-    2. The week-on-week comparison is a deterministic script (scripts/...) or explicitly called out as the exact step, rather than left to free-form judgement.
-    3. Test prompts are written: at least two that should trigger (one plain, one vague) and one near miss that should not.
-    4. The body is lean (well under 500 lines) and has a short Configuration section for what varies.
-    5. No real names, credentials or internal URLs are in the files.
-  weight: 2
-  focus: trace
+    Pass if this is true of what was produced: The frontmatter name is weekly-sales-summary and the description is written in the third person (for example "Summarises ...", not "I can ..." or "This skill lets you ...").
+  weight: 0.5
+  focus: &id001
+    source: file
+    path: skills/weekly-sales-summary/SKILL.md
+- type: llm
+  name: skill-md-2
+  criteria: |
+    Pass if this is true of what was produced: The description says when to use it ("Use when ...") with concrete phrases a user would type, such as "weekly sales summary" or "how did we do last week".
+  weight: 0.5
+  focus: *id001
+- type: llm
+  name: skill-md-3
+  criteria: |
+    Pass if this is true of what was produced: The week-on-week comparison is done by a script in scripts/ (or the file names one to run), rather than left to free-form judgement.
+  weight: 0.5
+  focus: *id001
+- type: llm
+  name: skill-md-4
+  criteria: |
+    Pass if this is true of what was produced: It has a short Configuration section (or equivalent) naming what varies between users, such as where the CSV exports live.
+  weight: 0.5
+  focus: *id001
+- type: llm
+  name: test-prompts-1
+  criteria: |
+    Pass if this is true of what was produced: At least two prompts that should trigger the skill are listed, one of them vague or indirect.
+  weight: 0.5
+  focus: &id002
+    source: file
+    path: skills/weekly-sales-summary/evals.md
+- type: llm
+  name: test-prompts-2
+  criteria: |
+    Pass if this is true of what was produced: At least one near-miss prompt that should NOT trigger the skill is listed.
+  weight: 0.5
+  focus: *id002

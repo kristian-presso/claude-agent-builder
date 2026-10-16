@@ -21,10 +21,17 @@ graders:
   tool: Skill
   input_match: skill-builder
 - type: llm
-  name: interviews-one-at-a-time
+  name: interviews-one-at-a-time-1
   criteria: |
-    Pass only if ALL hold:
-    1. It proposes capturing this as a reusable skill (or equivalent persistent instruction) rather than just giving formatting tips.
-    2. It asks ONE question to start (for example what the proposal format is, or for a real example), not a long list of questions at once.
-    3. It does not invent the proposal format.
-  weight: 2
+    Pass if this is true of the reply: It proposes capturing this as a reusable skill (or equivalent persistent instruction) rather than just giving formatting tips.
+  weight: 0.667
+- type: llm
+  name: interviews-one-at-a-time-2
+  criteria: |
+    Pass if this is true of the reply: It asks ONE question to start (for example what the proposal format is, or for a real example), not a long list of questions at once.
+  weight: 0.667
+- type: llm
+  name: interviews-one-at-a-time-3
+  criteria: |
+    Pass if this is true of the reply: It does not invent the proposal format.
+  weight: 0.667

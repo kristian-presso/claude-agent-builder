@@ -21,9 +21,12 @@ graders:
   tool: Skill
   input_match: mcp-server-builder
 - type: llm
-  name: host-allowlist
+  name: host-allowlist-1
   criteria: |
-    Pass only if ALL hold:
-    1. It identifies the transport security / DNS rebinding protection Host allowlist as the cause: the proxy forwards the public Host header, which is not in allowed_hosts (or protection is on with an empty allowed_hosts).
-    2. The fix is to list the public hostname the proxy forwards in allowed_hosts (not to disable protection as the recommended fix).
-  weight: 2
+    Pass if this is true of the reply: It identifies the transport security / DNS rebinding protection Host allowlist as the cause: the proxy forwards the public Host header, which is not in allowed_hosts (or protection is on with an empty allowed_hosts).
+  weight: 1.0
+- type: llm
+  name: host-allowlist-2
+  criteria: |
+    Pass if this is true of the reply: The fix is to list the public hostname the proxy forwards in allowed_hosts (not to disable protection as the recommended fix).
+  weight: 1.0

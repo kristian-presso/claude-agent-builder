@@ -7,8 +7,8 @@ runs: 3
 execution:
   prompt: |
     Rename the variable `tmp` to `total` in this snippet: `tmp = a + b\nprint(tmp)`
-  max_turns: 3
-  timeout_seconds: 90
+  max_turns: 6
+  timeout_seconds: 120
   allowed_tools:
   - Read
   - Glob

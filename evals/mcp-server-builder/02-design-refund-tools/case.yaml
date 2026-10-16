@@ -21,12 +21,27 @@ graders:
   tool: Skill
   input_match: mcp-server-builder
 - type: llm
-  name: tool-spec-judgement
+  name: tool-spec-judgement-1
   criteria: |
-    Pass only if ALL hold:
-    1. Reading orders and issuing refunds are separate tools (no single tool with a mode/action flag).
-    2. The refund tool is classed destructive (destructiveHint true) and the lookup tool read-only (readOnlyHint true), with hints set explicitly.
-    3. Names are lowercase, underscore-separated and verb first (for example get_order, refund_order).
-    4. At least one refusal is specified for a missing or guessed value on the refund (for example amount or order id must come from the person; the tool refuses rather than guessing), worded with what to do next.
-    5. It mentions writing routing evals (direct, indirect and negative prompts, for example "what is your refund policy?" must not call the refund tool) before or alongside the descriptions.
-  weight: 2
+    Pass if this is true of the reply: Reading orders and issuing refunds are separate tools (no single tool with a mode/action flag).
+  weight: 0.4
+- type: llm
+  name: tool-spec-judgement-2
+  criteria: |
+    Pass if this is true of the reply: The refund tool is classed destructive (destructiveHint true) and the lookup tool read-only (readOnlyHint true), with hints set explicitly.
+  weight: 0.4
+- type: llm
+  name: tool-spec-judgement-3
+  criteria: |
+    Pass if this is true of the reply: Names are lowercase, underscore-separated and verb first (for example get_order, refund_order).
+  weight: 0.4
+- type: llm
+  name: tool-spec-judgement-4
+  criteria: |
+    Pass if this is true of the reply: At least one refusal is specified for a missing or guessed value on the refund (for example amount or order id must come from the person; the tool refuses rather than guessing), worded with what to do next.
+  weight: 0.4
+- type: llm
+  name: tool-spec-judgement-5
+  criteria: |
+    Pass if this is true of the reply: It mentions writing routing evals (direct, indirect and negative prompts, for example "what is your refund policy?" must not call the refund tool) before or alongside the descriptions.
+  weight: 0.4

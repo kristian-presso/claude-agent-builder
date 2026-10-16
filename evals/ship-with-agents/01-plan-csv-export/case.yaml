@@ -21,12 +21,27 @@ graders:
   tool: Skill
   input_match: ship-with-agents
 - type: llm
-  name: criteria-that-can-fail
+  name: criteria-that-can-fail-1
   criteria: |
-    Pass only if at least FOUR of these FIVE hold:
-    1. Acceptance criteria are written before the build, and at least two are specific enough that a wrong build would fail them (for example a zero-row report returns a header-only CSV with 200; a field containing a comma round-trips unchanged).
-    2. An explicit out-of-scope list.
-    3. Each planned task names the files or area it touches and how it will be verified.
-    4. Verification is done by a fresh agent that gets only the criteria and the diff (blind), not by the builder.
-    5. Criteria report pass / fail / unmeasured and unmeasured blocks shipping, or it says to check for existing open PRs or branches before starting.
-  weight: 2
+    Pass if this is true of the reply: Acceptance criteria are written before the build, and at least two are specific enough that a wrong build would fail them (for example a zero-row report returns a header-only CSV with 200; a field containing a comma round-trips unchanged).
+  weight: 0.4
+- type: llm
+  name: criteria-that-can-fail-2
+  criteria: |
+    Pass if this is true of the reply: An explicit out-of-scope list.
+  weight: 0.4
+- type: llm
+  name: criteria-that-can-fail-3
+  criteria: |
+    Pass if this is true of the reply: Each planned task names the files or area it touches and how it will be verified.
+  weight: 0.4
+- type: llm
+  name: criteria-that-can-fail-4
+  criteria: |
+    Pass if this is true of the reply: Verification is done by a fresh agent that gets only the criteria and the diff (blind), not by the builder.
+  weight: 0.4
+- type: llm
+  name: criteria-that-can-fail-5
+  criteria: |
+    Pass if this is true of the reply: Criteria report pass / fail / unmeasured and unmeasured blocks shipping, or it says to check for existing open PRs or branches before starting.
+  weight: 0.4

@@ -21,12 +21,27 @@ graders:
   tool: Skill
   input_match: mcp-app-builder
 - type: llm
-  name: criteria-can-fail
+  name: criteria-can-fail-1
   criteria: |
-    Pass only if at least FOUR of these FIVE hold:
-    1. A criterion that drives the filter in the rendered view (typing into the view's input narrows visible rows), not only via the tool's query parameter.
-    2. A criterion for the empty state: no orders shows a message in words in both the view and the text fallback.
-    3. A criterion that the tool always returns a text content block alongside structuredContent, checked for every app tool (counted or called, not grepped once).
-    4. A criterion that a value shown in both the view and the text (for example an order time) agrees between them.
-    5. Verification reported as pass / fail / unmeasured, with unmeasured blocking a ship, or a rendered check in a real host.
-  weight: 2
+    Pass if this is true of the reply: A criterion that drives the filter in the rendered view (typing into the view's input narrows visible rows), not only via the tool's query parameter.
+  weight: 0.4
+- type: llm
+  name: criteria-can-fail-2
+  criteria: |
+    Pass if this is true of the reply: A criterion for the empty state: no orders shows a message in words in both the view and the text fallback.
+  weight: 0.4
+- type: llm
+  name: criteria-can-fail-3
+  criteria: |
+    Pass if this is true of the reply: A criterion that the tool always returns a text content block alongside structuredContent, checked for every app tool (counted or called, not grepped once).
+  weight: 0.4
+- type: llm
+  name: criteria-can-fail-4
+  criteria: |
+    Pass if this is true of the reply: A criterion that a value shown in both the view and the text (for example an order time) agrees between them.
+  weight: 0.4
+- type: llm
+  name: criteria-can-fail-5
+  criteria: |
+    Pass if this is true of the reply: Verification reported as pass / fail / unmeasured, with unmeasured blocking a ship, or a rendered check in a real host.
+  weight: 0.4

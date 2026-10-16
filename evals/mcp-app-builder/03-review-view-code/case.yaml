@@ -23,13 +23,32 @@ graders:
   tool: Skill
   input_match: mcp-app-builder
 - type: llm
-  name: finds-real-defects
+  name: finds-real-defects-1
   criteria: |
-    Pass only if at least FOUR of these SIX are identified:
-    1. The tool is registered only when the client advertises UI support; it should be registered unconditionally.
-    2. The tool returns only structuredContent with no text content block, so hosts without UI get nothing.
-    3. ontoolresult is attached after connect(), so the first tool result can be missed; handlers must be registered before connect().
-    4. The CSP / ui metadata is declared on the tool's _meta rather than in the resource read callback's contents, and/or a CSP is declared when the view makes no network requests.
-    5. Customer names are interpolated into innerHTML without escaping.
-    6. Literal background colour instead of host CSS variables.
-  weight: 2
+    Pass if the reply identifies this problem (in its own words is fine): The tool is registered only when the client advertises UI support; it should be registered unconditionally.
+  weight: 0.333
+- type: llm
+  name: finds-real-defects-2
+  criteria: |
+    Pass if the reply identifies this problem (in its own words is fine): The tool returns only structuredContent with no text content block, so hosts without UI get nothing.
+  weight: 0.333
+- type: llm
+  name: finds-real-defects-3
+  criteria: |
+    Pass if the reply identifies this problem (in its own words is fine): ontoolresult is attached after connect(), so the first tool result can be missed; handlers must be registered before connect().
+  weight: 0.333
+- type: llm
+  name: finds-real-defects-4
+  criteria: |
+    Pass if the reply identifies this problem (in its own words is fine): The CSP / ui metadata is declared on the tool's _meta rather than in the resource read callback's contents, and/or a CSP is declared when the view makes no network requests.
+  weight: 0.333
+- type: llm
+  name: finds-real-defects-5
+  criteria: |
+    Pass if the reply identifies this problem (in its own words is fine): Customer names are interpolated into innerHTML without escaping.
+  weight: 0.333
+- type: llm
+  name: finds-real-defects-6
+  criteria: |
+    Pass if the reply identifies this problem (in its own words is fine): Literal background colour instead of host CSS variables.
+  weight: 0.333

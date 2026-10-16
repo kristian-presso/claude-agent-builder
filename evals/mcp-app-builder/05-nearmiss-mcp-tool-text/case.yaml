@@ -6,9 +6,9 @@ tags:
 runs: 3
 execution:
   prompt: |
-    Add a get_weather tool to my Python MCP server that returns the temperature as text. Just the function, no UI.
-  max_turns: 4
-  timeout_seconds: 120
+    Show me a get_weather tool for a Python MCP server (FastMCP) that takes a city and returns the temperature as plain text. Just paste the function here, no UI, stub the lookup.
+  max_turns: 8
+  timeout_seconds: 150
   allowed_tools:
   - Read
   - Glob

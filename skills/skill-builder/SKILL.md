@@ -1,6 +1,6 @@
 ---
 name: skill-builder
-description: Turns a process someone already does by hand into a reusable Claude skill - a folder with a SKILL.md (name and description frontmatter), optional references/ for depth and scripts/ for deterministic steps. Interviews one step at a time, writes the trigger description, keeps the body lean, writes three test prompts, validates the folder with a bundled script and packages it for Claude Code or claude.ai. Use when someone says "make this a skill", "build a skill", "turn this into a skill", "write a SKILL.md", "why isn't my skill triggering", or describes a task they keep explaining to Claude from scratch.
+description: Turns a process someone already does by hand, or keeps re-explaining to Claude, into a reusable Claude skill: a folder with a SKILL.md (name and description frontmatter), optional references/ and scripts/. Interviews one step at a time, writes the trigger description, keeps the body lean, writes test prompts including a near miss, validates the folder with a bundled script and packages it for Claude Code, a plugin or claude.ai. Use whenever someone wants a skill created, fixed or debugged: "make this a skill", "make that a skill for Claude Code", "build a skill", "turn this into a skill", "write a SKILL.md", "why isn't my skill triggering", "my skill never fires", or when they say they keep explaining the same thing to Claude every time, such as how they want reports or proposals formatted. Load it before writing any SKILL.md file.
 ---
 
 # Skill builder

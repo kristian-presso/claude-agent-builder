@@ -31,17 +31,40 @@ graders:
   min: 0
   max: 0
 - type: llm
-  name: audit-judgement
+  name: audit-judgement-1
   criteria: |
-    Pass only if at least FIVE of these SEVEN findings are present and correct:
-    1. BookingTool mixes read, write and destructive actions behind an action flag; it should be split into separate tools (for example list_bookings, create_booking, cancel_booking), with cancel as destructive.
-    2. Tool names break naming rules (BookingTool is not lowercase, underscore-separated, verb first).
-    3. No tool sets annotations (readOnlyHint, destructiveHint, title); an omitted destructiveHint defaults to destructive for non-read tools.
-    4. create silently guesses a date ("tomorrow 10:00") instead of refusing without one.
-    5. get_customer_history returns a plausible empty answer ({"visits": []}) when there is no token, instead of refusing with an actionable message; auth is not enforced on the other tools at all.
-    6. Descriptions such as "Does booking stuff." and "List services." do not tell a model when to use the tool or which sibling to prefer.
-    7. The HTTP run binds 0.0.0.0 with no Host/Origin allowlist (transport security), and/or there are no tests and no routing (golden prompt) evals.
-  weight: 2
+    Pass if the reply identifies this problem (in its own words is fine): BookingTool mixes read, write and destructive actions behind an action flag; it should be split into separate tools (for example list_bookings, create_booking, cancel_booking), with cancel as destructive.
+  weight: 0.286
+- type: llm
+  name: audit-judgement-2
+  criteria: |
+    Pass if the reply identifies this problem (in its own words is fine): Tool names break naming rules (BookingTool is not lowercase, underscore-separated, verb first).
+  weight: 0.286
+- type: llm
+  name: audit-judgement-3
+  criteria: |
+    Pass if the reply identifies this problem (in its own words is fine): No tool sets annotations (readOnlyHint, destructiveHint, title); an omitted destructiveHint defaults to destructive for non-read tools.
+  weight: 0.286
+- type: llm
+  name: audit-judgement-4
+  criteria: |
+    Pass if the reply identifies this problem (in its own words is fine): create silently guesses a date ("tomorrow 10:00") instead of refusing without one.
+  weight: 0.286
+- type: llm
+  name: audit-judgement-5
+  criteria: |
+    Pass if the reply identifies this problem (in its own words is fine): get_customer_history returns a plausible empty answer ({"visits": []}) when there is no token, instead of refusing with an actionable message; auth is not enforced on the other tools at all.
+  weight: 0.286
+- type: llm
+  name: audit-judgement-6
+  criteria: |
+    Pass if the reply identifies this problem (in its own words is fine): Descriptions such as "Does booking stuff." and "List services." do not tell a model when to use the tool or which sibling to prefer.
+  weight: 0.286
+- type: llm
+  name: audit-judgement-7
+  criteria: |
+    Pass if the reply identifies this problem (in its own words is fine): The HTTP run binds 0.0.0.0 with no Host/Origin allowlist (transport security), and/or there are no tests and no routing (golden prompt) evals.
+  weight: 0.286
 - type: llm
   name: stage-verdicts
   criteria: |

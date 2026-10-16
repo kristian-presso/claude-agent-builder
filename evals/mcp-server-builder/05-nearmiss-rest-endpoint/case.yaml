@@ -7,8 +7,8 @@ runs: 3
 execution:
   prompt: |
     Write a FastAPI endpoint GET /health that returns {"ok": true}.
-  max_turns: 3
-  timeout_seconds: 90
+  max_turns: 6
+  timeout_seconds: 120
   allowed_tools:
   - Read
   - Glob

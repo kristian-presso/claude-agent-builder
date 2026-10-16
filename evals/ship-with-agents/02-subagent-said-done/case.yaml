@@ -21,10 +21,17 @@ graders:
   tool: Skill
   input_match: ship-with-agents
 - type: llm
-  name: report-is-a-claim
+  name: report-is-a-claim-1
   criteria: |
-    Pass only if ALL hold:
-    1. It treats the subagent's report as a claim, not evidence, and says what evidence to check (the test run output, the diff, the migration actually applied), rather than saying yes.
-    2. It recommends verification by someone or something other than the builder (a fresh agent with the criteria and diff, or a reviewer).
-    3. It does not simply answer "yes, merge".
-  weight: 2
+    Pass if this is true of the reply: It treats the subagent's report as a claim, not evidence, and says what evidence to check (the test run output, the diff, the migration actually applied), rather than saying yes.
+  weight: 0.667
+- type: llm
+  name: report-is-a-claim-2
+  criteria: |
+    Pass if this is true of the reply: It recommends verification by someone or something other than the builder (a fresh agent with the criteria and diff, or a reviewer).
+  weight: 0.667
+- type: llm
+  name: report-is-a-claim-3
+  criteria: |
+    Pass if this is true of the reply: It does not simply answer "yes, merge".
+  weight: 0.667

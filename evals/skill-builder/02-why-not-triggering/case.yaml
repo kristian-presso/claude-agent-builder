@@ -25,11 +25,22 @@ graders:
   tool: Skill
   input_match: skill-builder
 - type: llm
-  name: diagnoses-description
+  name: diagnoses-description-1
   criteria: |
-    Pass only if at least THREE of these FOUR are identified:
-    1. The name "My Helper" is invalid (must be lowercase letters, digits and hyphens) and does not match the folder name invoice-helper.
-    2. The description is first person ("I can") rather than third person.
-    3. The description has no "Use when ..." and no concrete trigger phrases a user would actually type.
-    4. The description is too vague ("invoices and stuff") to match requests, and it proposes a concrete rewritten description.
-  weight: 2
+    Pass if the reply identifies this problem (in its own words is fine): The name "My Helper" is invalid (must be lowercase letters, digits and hyphens) and does not match the folder name invoice-helper.
+  weight: 0.5
+- type: llm
+  name: diagnoses-description-2
+  criteria: |
+    Pass if the reply identifies this problem (in its own words is fine): The description is first person ("I can") rather than third person.
+  weight: 0.5
+- type: llm
+  name: diagnoses-description-3
+  criteria: |
+    Pass if the reply identifies this problem (in its own words is fine): The description has no "Use when ..." and no concrete trigger phrases a user would actually type.
+  weight: 0.5
+- type: llm
+  name: diagnoses-description-4
+  criteria: |
+    Pass if the reply identifies this problem (in its own words is fine): The description is too vague ("invoices and stuff") to match requests; the reply either proposes a concrete rewritten description or asks what the skill should do so it can write one (it must not leave the fix unaddressed).
+  weight: 0.5

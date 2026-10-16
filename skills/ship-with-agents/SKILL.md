@@ -1,6 +1,6 @@
 ---
 name: ship-with-agents
-description: Runs multi-step software work with coding agents through a five-step loop (Discuss, Plan, Execute, Verify, Ship), each ending in an artefact on disk, with acceptance criteria written before the build that can actually fail, blind verification by an agent that never saw the plan, named gates and escalation, and context-budget checkpoints. Use when a task spans more than one phase, file area or repository, will take more than a couple of hours, is being split across subagents, or when someone asks "plan this build", "how do I know the agent actually finished", "verify this properly", or "set up a workflow for shipping with Claude Code".
+description: Runs multi-step software work with coding agents through a five-step loop (Discuss, Plan, Execute, Verify, Ship), each ending in an artefact on disk, with acceptance criteria written before the build that can actually fail, blind verification by an agent that never saw the plan, named gates and escalation, and context-budget checkpoints. Use when a task spans more than one phase, file area or repository, is being split across subagents, or when someone asks "plan this build", "how do I know the agent actually finished", "the agent says it's done but it isn't", "my subagent says it's done, can I merge?", "all tests pass according to the agent", "verify this properly", or "set up a workflow for shipping with Claude Code". Use it whenever deciding whether work an agent or subagent reported as finished is really finished.
 ---
 
 # Ship with agents

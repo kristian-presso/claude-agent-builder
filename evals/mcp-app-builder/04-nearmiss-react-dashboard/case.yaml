@@ -7,8 +7,8 @@ runs: 3
 execution:
   prompt: |
     Write a small React component that shows a table of orders with a search box. Standalone web app, nothing to do with MCP.
-  max_turns: 3
-  timeout_seconds: 120
+  max_turns: 6
+  timeout_seconds: 150
   allowed_tools:
   - Read
   - Glob

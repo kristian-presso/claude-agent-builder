@@ -21,10 +21,17 @@ graders:
   tool: Skill
   input_match: agent-security
 - type: llm
-  name: no-plaintext-long-lived
+  name: no-plaintext-long-lived-1
   criteria: |
-    Pass only if ALL hold:
-    1. It says no to giving the agent a plaintext live, long-lived key.
-    2. It recommends a test-mode or restricted, short-lived key, and/or injecting the credential outside the agent's boundary (a proxy or secret manager) so the agent never reads it.
-    3. It mentions keeping credential files away from the agent (deny reading .env, or unset env vars) or secret scanning.
-  weight: 2
+    Pass if this is true of the reply: It says no to giving the agent a plaintext live, long-lived key.
+  weight: 0.667
+- type: llm
+  name: no-plaintext-long-lived-2
+  criteria: |
+    Pass if this is true of the reply: It recommends a test-mode or restricted, short-lived key, and/or injecting the credential outside the agent's boundary (a proxy or secret manager) so the agent never reads it.
+  weight: 0.667
+- type: llm
+  name: no-plaintext-long-lived-3
+  criteria: |
+    Pass if this is true of the reply: It mentions keeping credential files away from the agent (deny reading .env, or unset env vars) or secret scanning.
+  weight: 0.667

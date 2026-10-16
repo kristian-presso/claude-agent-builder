@@ -1,6 +1,6 @@
 ---
 name: mcp-server-builder
-description: Builds a Model Context Protocol (MCP) server from idea to shippable, or audits an existing one against the same bar. Covers choosing tools, resources and prompts, writing tool names, descriptions and annotations a model can route on, transports and stateless deployment, fail-closed auth, refusal wording, three levels of tests, and directory submission. Use when someone says "build an MCP server", "add a tool to my MCP", "is this MCP ready to ship", "audit my MCP server", "why does my MCP return 421", or before listing a server in the Claude or ChatGPT directory.
+description: Builds a Model Context Protocol (MCP) server from idea to shippable, or audits or debugs an existing one against the same bar. Covers choosing tools, resources and prompts, writing tool names, descriptions and annotations a model can route on, transports, reverse proxies and stateless deployment, fail-closed auth, refusal wording, three levels of tests, and directory submission. Use when someone says "build an MCP server", "spec the tools for my MCP", "add a tool to my MCP", "is this MCP ready to ship", "audit my MCP server", "why does my MCP return 421", "my MCP server works locally but not behind the proxy", or before listing a server in the Claude or ChatGPT directory.
 ---
 
 # MCP server builder

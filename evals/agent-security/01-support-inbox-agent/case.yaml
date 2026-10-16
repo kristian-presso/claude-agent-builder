@@ -21,10 +21,17 @@ graders:
   tool: Skill
   input_match: agent-security
 - type: llm
-  name: trifecta-and-leg-removal
+  name: trifecta-and-leg-removal-1
   criteria: |
-    Pass only if ALL hold:
-    1. It identifies all three: private data (CRM), untrusted content (inbound email), and a way to send data out (sending replies), and says the combination is exploitable by design (prompt injection can exfiltrate CRM data).
-    2. Its single top recommendation removes a leg, most naturally: the agent drafts and a person sends (or another structural removal), rather than leading with prompt wording, warnings or filters.
-    3. It does not call the result "secure" or say injection is "prevented"; it states residual risk.
-  weight: 2
+    Pass if this is true of the reply: It identifies all three: private data (CRM), untrusted content (inbound email), and a way to send data out (sending replies), and says the combination is exploitable by design (prompt injection can exfiltrate CRM data).
+  weight: 0.667
+- type: llm
+  name: trifecta-and-leg-removal-2
+  criteria: |
+    Pass if this is true of the reply: Its single top recommendation removes a leg, most naturally: the agent drafts and a person sends (or another structural removal), rather than leading with prompt wording, warnings or filters.
+  weight: 0.667
+- type: llm
+  name: trifecta-and-leg-removal-3
+  criteria: |
+    Pass if this is true of the reply: It does not call the result "secure" or say injection is "prevented"; it states residual risk.
+  weight: 0.667

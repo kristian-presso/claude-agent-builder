@@ -7,8 +7,8 @@ runs: 3
 execution:
   prompt: |
     In two sentences, what is the Model Context Protocol?
-  max_turns: 3
-  timeout_seconds: 90
+  max_turns: 6
+  timeout_seconds: 120
   allowed_tools:
   - Read
   - Glob

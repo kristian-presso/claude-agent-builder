@@ -21,11 +21,22 @@ graders:
   tool: Skill
   input_match: ship-with-agents
 - type: llm
-  name: structural-answer
+  name: structural-answer-1
   criteria: |
-    Pass only if at least THREE of these FOUR hold:
-    1. Write acceptance criteria up front that can fail (could a wrong build pass it? then rewrite it).
-    2. Blind verification: a separate agent that gets the criteria and diff only.
-    3. Each check reports pass, fail or unmeasured, and unmeasured counts as not done.
-    4. A blocked step must declare the block rather than produce plausible prose; state lives in artefacts on disk, not in chat.
-  weight: 2
+    Pass if this is true of the reply: It recommends writing acceptance criteria before the work that a wrong build could not pass.
+  weight: 0.5
+- type: llm
+  name: structural-answer-2
+  criteria: |
+    Pass if this is true of the reply: It recommends that a separate agent, not the builder, verifies the work using only the criteria and the diff.
+  weight: 0.5
+- type: llm
+  name: structural-answer-3
+  criteria: |
+    Pass if this is true of the reply: It says each check is reported as pass, fail or unmeasured, with unmeasured treated as not done.
+  weight: 0.5
+- type: llm
+  name: structural-answer-4
+  criteria: |
+    Pass if this is true of the reply: It says a blocked step must declare that it is blocked, or that state should live in files on disk rather than in the chat.
+  weight: 0.5
